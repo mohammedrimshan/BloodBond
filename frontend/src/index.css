@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Core */
+  --color-background: hsl(0 20% 97%);
+  --color-foreground: hsl(0 30% 12%);
+  --color-border: hsl(0 15% 88%);
+
+  /* Brand — Crimson blood-red */
+  --color-primary: hsl(0 70% 40%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  /* Muted text */
+  --color-muted: hsl(0 15% 95%);
+  --color-muted-foreground: hsl(0 15% 42%);
+
+  /* Custom UI colors */
+  --color-peach: hsl(0 40% 93%);
+  --color-peach-dark: hsl(0 35% 88%);
+
+  --color-burgundy: hsl(0 70% 40%);
+  --color-burgundy-light: hsl(0 65% 50%);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes fall {
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+  to {
+    transform: translateY(120vh) rotate(180deg);
+  }
+}
+
+.animate-fall {
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
