@@ -14,6 +14,9 @@ export interface IUser {
   place?: string;
   lastDonatedDate?: Date;
   whatsappNumber?: string;
+  address?: string;
+  pincode?: string;
+  district?: string;
   isEligible?: boolean;
   createdAt?: Date;
   refreshToken?: string;

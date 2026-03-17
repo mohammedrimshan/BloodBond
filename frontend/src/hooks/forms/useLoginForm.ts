@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
 import { useForm } from "./useForm";
 import { useLogin } from "@/hooks/auth/useAuth";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 export function useLoginForm() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const loginMutation = useLogin();
 
   const onSubmit = useCallback(
@@ -33,6 +35,9 @@ export function useLoginForm() {
             })
           );
         }
+
+        // Invalidate donors query to update landing page instantly
+        queryClient.invalidateQueries({ queryKey: ["donors"] });
 
         toast.success(AUTH_TOASTS.LOGIN_SUCCESS);
         navigate("/");

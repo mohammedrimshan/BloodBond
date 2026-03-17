@@ -1,15 +1,27 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import {
-  Bell,
-  ChevronLeft,
-  ChevronRight,
   LogOut,
+  User,
+  Mail,
+  MapPin,
+  Phone,
+  Home,
+  Clock,
+  Droplets,
+  Calendar,
+  Pencil,
+  Activity,
+  ShieldCheck,
+  Flame,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { RootState } from "@/store/store";
-import { clearUser } from "@/store/userSlice";
+import { clearUser, setUser } from "@/store/userSlice";
 import { logoutUser } from "@/Service/authService";
+import { getProfile } from "@/Service/userService";
 import { PROFILE_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
 
@@ -17,6 +29,21 @@ const ProfilePage = () => {
   const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await getProfile();
+        if (response.success) {
+          // Sync Redux with full user object
+          dispatch(setUser(response.data));
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      }
+    };
+    fetchProfile();
+  }, [dispatch]);
 
   const handleLogout = async () => {
     try {
@@ -36,81 +63,243 @@ const ProfilePage = () => {
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
-    return age;
+    return `${age} years`;
   };
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "Not provided";
     return new Date(dateString)
-      .toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" })
+      .toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
       .replace(/\//g, " - ");
   };
 
   const age = calculateAge(user.dateOfBirth);
-  const lastDonation = user.lastDonatedDate ? formatDate(user.lastDonatedDate) : "11 - 10 - 2021";
+  const lastDonation = user.lastDonatedDate ? formatDate(user.lastDonatedDate) : "Not provided";
 
-  const donationHistory = [
-    { date: "13 Dec 2020", units: 120 },
-    { date: "28 Nov 2020", units: 20 },
-    { date: "04 Nov 2020", units: 40 },
-    { date: "15 Oct 2020", units: 310 },
+  // Donation history is currently not implemented in backend, keeping empty array
+  const donationHistory: any[] = [];
+
+  const aboutFields = [
+    {
+      label: "Full Name",
+      value: user.name,
+      icon: <User size={14} className="text-blue-500" />,
+      iconBg: "bg-blue-50",
+    },
+    {
+      label: "Email",
+      value: user.email,
+      icon: <Mail size={14} className="text-purple-500" />,
+      iconBg: "bg-purple-50",
+    },
+    {
+      label: "WhatsApp Number",
+      value: user.whatsappNumber || "Not provided",
+      icon: <MessageCircle size={14} className="text-green-500" />,
+      iconBg: "bg-green-50",
+    },
+    {
+      label: "Place",
+      value: user.place || "Not provided",
+      icon: <MapPin size={14} className="text-rose-500" />,
+      iconBg: "bg-rose-50",
+    },
+    {
+      label: "District",
+      value: user.district || "Not provided",
+      icon: <MapPin size={14} className="text-orange-500" />,
+      iconBg: "bg-orange-50",
+    },
+    {
+      label: "Phone Number",
+      value: user.phoneNumber,
+      icon: <Phone size={14} className="text-green-600" />,
+      iconBg: "bg-green-50",
+    },
+    {
+      label: "Pincode",
+      value: user.pincode || "Not provided",
+      icon: <Home size={14} className="text-yellow-600" />,
+      iconBg: "bg-yellow-50",
+    },
+    {
+      label: "Age",
+      value: age,
+      icon: <Clock size={14} className="text-indigo-500" />,
+      iconBg: "bg-indigo-50",
+    },
+    {
+      label: "Blood Group",
+      value: user.bloodGroup || "Not provided",
+      icon: <Droplets size={14} className="text-red-500" />,
+      iconBg: "bg-red-50",
+      isBlood: true,
+    },
+    {
+      label: "Address",
+      value: user.address || "Not provided",
+      icon: <MapPin size={14} className="text-blue-400" />,
+      iconBg: "bg-slate-50",
+    },
+    {
+      label: "Last Donation Date",
+      value: lastDonation,
+      icon: <Calendar size={14} className="text-teal-500" />,
+      iconBg: "bg-teal-50",
+    },
   ];
 
+
   return (
-    <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center p-3 font-sans">
-      {/* Main Window Container */}
-      <div className="w-full max-w-[1100px] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col lg:flex-row">
-
-        {/* Main Content Area */}
-        <div className="flex-1 p-5 space-y-4 bg-[#f9fafb]/50">
-
-          {/* Header Section */}
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-center gap-5">
-              <div className="w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center overflow-hidden ring-1 ring-slate-100 shrink-0">
-                {user.photoUrl ? (
-                  <img src={user.photoUrl} alt={user.name || "User"} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-slate-100" />
-                )}
+    <div className="min-h-screen bg-[#f0f2f5] py-6 sm:py-10 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-5">
+        {/* ─── MAIN COLUMN ─── */}
+        <div className="flex-1 space-y-5">
+          {/* Header Card */}
+          <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-5 transition-all">
+            <div className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-red-50 border-2 border-red-100 flex items-center justify-center overflow-hidden transition-transform hover:scale-105">
+                  {user.photoUrl ? (
+                    <img
+                      src={user.photoUrl}
+                      alt={user.name || "User"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={36} className="text-red-400" />
+                  )}
+                </div>
+                {/* Blood group badge */}
+                <span className="absolute -bottom-1.5 -right-1.5 bg-red-600 text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-lg border-2 border-white shadow-sm">
+                  {user.bloodGroup || "N/A"}
+                </span>
               </div>
-              <h1 className="text-xl font-extrabold text-[#1a1c1e] tracking-tight">
-                {user.name || "User Name"}
-              </h1>
+
+              {/* Name & meta */}
+              <div className="text-center sm:text-left">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                  {user.name || "User Name"}
+                </h1>
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-1.5 text-sm text-gray-400 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin size={13} className="shrink-0" />
+                    <span>
+                      {user.place || "Not provided"}, {user.district || "Kerala"}
+                    </span>
+                  </div>
+                  <span className="hidden sm:inline w-1 h-1 bg-slate-200 rounded-full" />
+                  <span className="inline-flex items-center gap-1 bg-green-50 text-green-600 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-green-100">
+                    <ShieldCheck size={10} />
+                    Verified Donor
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                <Bell size={20} />
-              </button>
-              <Button className="bg-black hover:bg-slate-900 text-white rounded-xl px-6 py-2 text-sm font-bold transition-all h-auto">
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-end">
+              <Button
+                onClick={() => navigate("/profile/edit")}
+                className="bg-gray-900 hover:bg-black text-white rounded-xl px-6 py-2.5 text-sm font-semibold h-11 flex items-center gap-2.5 shadow-sm active:scale-95 transition-all outline-none"
+              >
+                <Pencil size={15} />
                 Edit Profile
               </Button>
             </div>
           </div>
 
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                icon: <Droplets size={18} className="text-red-500" />,
+                iconBg: "bg-red-50",
+                label: "Blood Group",
+                value: user.bloodGroup || "Not provided",
+              },
+              {
+                icon: <Calendar size={18} className="text-blue-500" />,
+                iconBg: "bg-blue-50",
+                label: "Last Donation",
+                value: lastDonation,
+              },
+              {
+                icon: <Activity size={18} className="text-green-600" />,
+                iconBg: "bg-green-50",
+                label: "Eligibility",
+                value: user.isEligible ? "Eligible" : "Not Eligible",
+              },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-slate-100 p-4.5 flex items-center gap-4 hover:shadow-md transition-all group"
+              >
+                <div
+                  className={`w-11 h-11 rounded-xl ${stat.iconBg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}
+                >
+                  {stat.icon}
+                </div>
+                <div>
+                  <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                    {stat.label}
+                  </div>
+                  <div className="text-base font-bold text-slate-800 tracking-tight">
+                    {stat.value}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* About Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="px-6 py-3 text-center border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-600">About</h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-7 py-4 flex items-center gap-3 border-b border-slate-50 bg-slate-50/30">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+                <User size={14} className="text-indigo-600" />
+              </div>
+              <h2 className="text-[15px] font-bold text-slate-800">
+                Personal Information
+              </h2>
             </div>
-            <div className="divide-y divide-slate-100">
-              {[
-                { label: "Full Name", value: user.name },
-                { label: "Email", value: user.email },
-                { label: "District", value: user.place || "Kozhikode" },
-                { label: "Phone Number", value: user.phoneNumber },
-                { label: "Pincode", value: "673014" },
-                { label: "Age", value: age === "Not provided" ? "21" : age },
-                { label: "Blood Group", value: user.bloodGroup || "O +ve" },
-                { label: "Address", value: "Karuvally Reenugeetham House..." },
-                { label: "Last Donation Date", value: lastDonation },
-              ].map((item, index) => (
+
+            <div className="divide-y divide-slate-50">
+              {aboutFields.map((item, index) => (
                 <div
                   key={index}
-                  className="flex flex-col sm:flex-row items-center px-6 py-2.5 hover:bg-slate-50/40 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center px-7 py-3 hover:bg-slate-50/60 transition-colors gap-1 sm:gap-0"
                 >
-                  <span className="w-full sm:w-5/12 text-slate-500 font-semibold text-sm text-center">{item.label}</span>
-                  <span className="w-full sm:w-7/12 text-slate-800 font-medium text-sm text-center sm:text-left">{item.value || "Not provided"}</span>
+                  <div className="flex items-center gap-4 sm:w-56 shrink-0">
+                    <div
+                      className={`w-7 h-7 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0`}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="text-slate-400 font-semibold text-[11px] uppercase tracking-widest">
+                      {item.label}
+                    </span>
+                  </div>
+                  <div className="flex-1 pl-11 sm:pl-0">
+                    <span className="text-slate-700 font-semibold text-[14px] tracking-tight">
+                      {item.isBlood ? (
+                        <span className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-bold text-xs px-3 py-1 rounded-lg border border-red-100 shadow-sm">
+                          <Flame size={11} fill="currentColor" />
+                          {item.value}
+                        </span>
+                      ) : (
+                        item.value || (
+                          <span className="text-slate-300 font-medium italic">
+                            Not provided
+                          </span>
+                        )
+                      )}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -120,71 +309,79 @@ const ProfilePage = () => {
           <div className="flex justify-start">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 text-slate-400 hover:text-red-500 transition-colors font-medium px-3 py-1.5 text-sm"
+              className="flex items-center gap-2.5 text-slate-400 hover:text-red-500 transition-all font-semibold px-4 py-2 text-sm group"
             >
-              <LogOut size={15} />
+              <LogOut
+                size={16}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
               <span>Logout and return home</span>
             </button>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="w-full lg:w-[320px] p-5 space-y-4 bg-[#f3f4f6]/30 border-l border-slate-100/50">
-
-          {/* Donation History Card */}
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
-            <h2 className="text-center text-sm font-bold text-slate-700 mb-4">Donation History</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between px-1 text-slate-300 text-xs font-bold">
-                <span>Date</span>
-                <span>Blood Units</span>
-              </div>
-              <div className="space-y-1">
-                {donationHistory.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                    <span className="text-slate-600 font-medium text-sm">{item.date}</span>
-                    <span className="text-slate-800 font-bold text-sm">{item.units}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Calendar Card */}
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-black text-slate-800">December 2020</h2>
-              <div className="flex gap-2">
-                <button className="text-slate-400 hover:text-slate-600"><ChevronLeft size={18} /></button>
-                <button className="text-slate-400 hover:text-slate-600"><ChevronRight size={18} /></button>
-              </div>
+        {/* ─── SIDEBAR ─── */}
+        <div className="w-full lg:w-[360px] space-y-5">
+          {/* Donation History */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-50 bg-slate-50/30">
+              <h2 className="text-[14px] font-bold text-slate-800 flex items-center gap-2.5">
+                <Droplets size={15} className="text-red-500" />
+                History
+              </h2>
+              <span className="bg-red-50 text-red-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-red-100 uppercase">
+                {donationHistory.length} Donations
+              </span>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-y-1 text-center">
-              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((day) => (
-                <span key={day} className="text-[10px] font-bold text-slate-400 uppercase pb-1">{day}</span>
-              ))}
-              {[...Array(31)].map((_, i) => {
-                const day = i + 1;
-                const isSelected = day === 18;
-                return (
-                  <div key={i} className="flex items-center justify-center">
-                    <span
-                      className={`w-7 h-7 flex items-center justify-center text-xs font-bold rounded-md transition-all ${
-                        isSelected
-                          ? "bg-[#3b49df] text-white shadow-md"
-                          : "text-slate-600 hover:bg-slate-50"
-                      }`}
+            {donationHistory.length > 0 ? (
+              <>
+                <div className="flex justify-between px-7 py-2.5 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                  <span>Date</span>
+                  <span>Units</span>
+                </div>
+                <div className="px-1.5 pb-1.5">
+                  {donationHistory.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center px-5 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/80 rounded-xl transition-all group"
                     >
-                      {day}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                      <div className="flex items-center gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-200 group-hover:bg-red-500 transition-all shrink-0" />
+                        <span className="text-slate-600 font-semibold text-sm">
+                          {item.date}
+                        </span>
+                      </div>
+                      <span className="bg-slate-50 text-slate-800 border border-slate-100 text-[12px] font-bold px-3 py-1 rounded-lg group-hover:bg-red-50 group-hover:text-red-700 transition-all">
+                        {item.units} ml
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="px-7 py-10 text-center">
+                <p className="text-slate-300 text-sm italic font-medium">
+                  No donation history available yet.
+                </p>
+              </div>
+            )}
           </div>
 
+          {/* Calendar (Dummy for now as per design request) */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden opacity-50 grayscale">
+            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-50 bg-slate-50/30">
+              <h2 className="text-[14px] font-bold text-slate-800 flex items-center gap-2.5">
+                <Calendar size={15} className="text-slate-500" />
+                History View
+              </h2>
+            </div>
+            <div className="p-8 text-center">
+              <p className="text-[11px] text-slate-300 font-medium">
+                Calendar view will be available once history is added.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVerifyOTP, useResendOTP } from "@/hooks/auth/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 import { OTP_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
@@ -22,6 +23,7 @@ const OTPModal = ({ isOpen, onClose, email, userId, onVerified }: Props) => {
 
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   const verifyOTPMutation = useVerifyOTP();
   const resendOTPMutation = useResendOTP();
@@ -71,6 +73,8 @@ const OTPModal = ({ isOpen, onClose, email, userId, onVerified }: Props) => {
   ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "Enter") {
+      handleVerify();
     }
   };
 
@@ -133,6 +137,9 @@ const OTPModal = ({ isOpen, onClose, email, userId, onVerified }: Props) => {
           })
         );
       }
+
+      // Invalidate donors query to update landing page instantly
+      queryClient.invalidateQueries({ queryKey: ["donors"] });
 
       toast.success(OTP_TOASTS.VERIFY_SUCCESS);
       onVerified();

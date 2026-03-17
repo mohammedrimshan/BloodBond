@@ -12,6 +12,9 @@ interface User {
   place?: string | null;
   lastDonatedDate?: string | null;
   whatsappNumber?: string | null;
+  address?: string | null;
+  pincode?: string | null;
+  district?: string | null;
   isEligible?: boolean;
 }
 
@@ -33,6 +36,9 @@ const initialState: UserState = {
     place: null,
     lastDonatedDate: null,
     whatsappNumber: null,
+    address: null,
+    pincode: null,
+    district: null,
     isEligible: false,
   },
   isLoggedIn: false,

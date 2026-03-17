@@ -13,6 +13,7 @@ import Signup from "@/components/Auth/SignUp";
 import Loading from "@/components/Loading/Loading";
 import LandingPage from "@/components/Landing/LandingPage";
 import ProfilePage from "@/components/Profile/ProfilePage";
+import EditProfilePage from "@/components/Profile/EditProfilePage";
 import Navbar from "@/components/Navbar/Navbar";
 
 import ProtectedRoute from "@/Protect/ProtectedRoute";
@@ -69,6 +70,7 @@ const AppContent = () => {
             {/* Auth-only pages */}
             <Route element={<AuthProtectedRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
             </Route>
           </Route>
 

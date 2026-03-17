@@ -4,7 +4,7 @@
   "description": "Worklog tracker API (MVC) - TypeScript, JWT-in-cookie, MongoDB",
   "main": "dist/index.js",
   "scripts": {
-     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
+    "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
     "prepare": "echo \"skip build on install\"",

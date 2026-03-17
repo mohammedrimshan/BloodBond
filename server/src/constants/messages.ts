@@ -41,4 +41,5 @@ export const SUCCESS_MESSAGES = {
   SEARCH_SUCCESS:"Search results fetched successfully",
   REGISTRATION_SUCCESS: "Registration successful. Please verify your email with the OTP sent.",
   FETCHED_SUCCESS: "Data fetched successfully.",
+  UPDATE_SUCCESS: "Profile updated successfully.",
 };
