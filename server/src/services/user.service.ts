@@ -1,10 +1,13 @@
 import { IUserService } from "../interfaces/services-interface/user-service.interface";
 import { IUserRepository } from "../interfaces/repository-interface/user-repository.interface";
+import { ICloudinaryService } from "../interfaces/services-interface/cloudinary-service.interface";
 import { IUser, UserDocument } from "../types/user";
-import { cloudinaryService } from "./cloudinary.service";
 
 export class UserService implements IUserService {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private cloudinaryService: ICloudinaryService
+  ) {}
 
   async getEligibleDonors(): Promise<UserDocument[]> {
     return this.userRepository.findAllEligible();
@@ -21,19 +24,15 @@ export class UserService implements IUserService {
     const { profileImage, ...updateData } = data;
 
     if (profileImage) {
-      // Find current user to get old publicId
       const currentUser = await this.userRepository.findById(id);
-      
-      // Upload new image
-      const uploadResult = await cloudinaryService.uploadImage(profileImage);
-      
-      // Add photo details to update data
+
+      const uploadResult = await this.cloudinaryService.uploadImage(profileImage);
+
       updateData.photoUrl = uploadResult.url;
       updateData.photoPublicId = uploadResult.publicId;
 
-      // Delete old image if it exists
       if (currentUser?.photoPublicId) {
-        await cloudinaryService.deleteImage(currentUser.photoPublicId);
+        await this.cloudinaryService.deleteImage(currentUser.photoPublicId);
       }
     }
 

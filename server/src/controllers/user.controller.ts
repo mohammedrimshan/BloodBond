@@ -50,8 +50,6 @@ export class UserController implements IUserController {
     try {
       const userId = (req as CustomRequest).user.id;
       await this.userService.updateUserProfile(userId, req.body);
-      
-      // Fetch fresh user data to ensure all fields are synchronized
       const updatedUser = await this.userService.getUserById(userId);
 
       res.status(StatusCode.OK).json({

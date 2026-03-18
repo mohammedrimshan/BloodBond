@@ -7,7 +7,6 @@ exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = async () => {
     const uri = process.env.MONGO_URI;
-    console.log(uri);
     if (!uri) {
         throw new Error("Connection string not loaded");
     }
@@ -17,6 +16,7 @@ const connectDB = async () => {
     }
     catch (error) {
         console.error("MongoDB connection error:", error.message);
+        process.exit(1);
     }
 };
 exports.connectDB = connectDB;

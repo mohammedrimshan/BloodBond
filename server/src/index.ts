@@ -13,6 +13,7 @@ import { AuthService } from "./services/auth.service";
 import { AuthController } from "./controllers/auth.controller";
 import { UserService } from "./services/user.service";
 import { UserController } from "./controllers/user.controller";
+import { CloudinaryService } from "./services/cloudinary.service";
 import userRoutes from "./routes/user.route";
 import asyncHandler from "express-async-handler";
 
@@ -44,10 +45,13 @@ app.use((req, res, next) => {
 const userRepository = new UserRepository();
 const otpRepository = new OtpRepository();
 
-// Instantiate services
+// Instantiate external services
+const cloudinaryService = new CloudinaryService();
+
+// Instantiate internal services
 const otpService = new OtpService(otpRepository);
 const authService = new AuthService(userRepository, otpRepository, otpService);
-const userService = new UserService(userRepository);
+const userService = new UserService(userRepository, cloudinaryService);
 
 // Instantiate controllers
 const authController = new AuthController(authService);

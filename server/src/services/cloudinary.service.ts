@@ -1,6 +1,8 @@
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 
+import { ICloudinaryService } from "../interfaces/services-interface/cloudinary-service.interface";
+
 dotenv.config();
 
 cloudinary.config({
@@ -9,7 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export class CloudinaryService {
+export class CloudinaryService implements ICloudinaryService {
   /**
    * Upload an image to cloudinary.
    * @param file The file as a Base64 string or file path.
@@ -44,5 +46,3 @@ export class CloudinaryService {
     }
   }
 }
-
-export const cloudinaryService = new CloudinaryService();
