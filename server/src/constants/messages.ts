@@ -25,7 +25,11 @@ export const ERROR_MESSAGES = {
   URL_NOT_FOUND: "Sorry, this short URL does not exist.",
   SHORT_URL_EXISTS: "Custom short URL already exists.",
   URL_CREATION_FAILED: "Failed to create short URL.",
-  URL_QUERY_REQUIRED:"Search query is required"
+  URL_QUERY_REQUIRED:"Search query is required",
+  ADMIN_NOT_FOUND: "Admin not found",
+  INVALID_ADMIN_CREDENTIALS: "Invalid admin credentials",
+  USER_IS_BLOCKED: "Your account is blocked. Please contact support.",
+  FORBIDDEN: "Forbidden access",
 } as const;
 
 export const SUCCESS_MESSAGES = {
@@ -42,4 +46,8 @@ export const SUCCESS_MESSAGES = {
   REGISTRATION_SUCCESS: "Registration successful. Please verify your email with the OTP sent.",
   FETCHED_SUCCESS: "Data fetched successfully.",
   UPDATE_SUCCESS: "Profile updated successfully.",
+  USER_BLOCKED: "User blocked successfully",
+  USER_UNBLOCKED: "User unblocked successfully",
+  ADMIN_LOGIN_SUCCESS: "Admin login successful",
+  ADMIN_LOGOUT_SUCCESS: "Admin logout successful",
 };

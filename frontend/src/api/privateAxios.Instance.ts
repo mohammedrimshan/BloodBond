@@ -4,6 +4,9 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 import { authAxiosInstance } from "./authAxios.Instance";
+import { store } from "../store/store";
+import { clearUser } from "../store/userSlice";
+import { toast } from "sonner";
 
 export const privateAxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_PVT_URL,
@@ -11,7 +14,7 @@ export const privateAxiosInstance = axios.create({
 });
 
 interface QueueItem {
- resolve: (value?: unknown) => void;
+  resolve: (value?: unknown) => void;
   reject: (reason?: any) => void;
 }
 
@@ -33,6 +36,18 @@ privateAxiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryableRequest;
+    const responseData = error.response?.data as { forceLogout?: boolean; message?: string } | undefined;
+
+    // Handle force logout for blocked users
+    if (responseData?.forceLogout) {
+      store.dispatch(clearUser());
+      toast.error(responseData.message || "Your account has been blocked by admin.");
+      
+      if (typeof window !== "undefined") {
+        window.location.href = "/login"; // Redirect to login
+      }
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
@@ -57,10 +72,10 @@ privateAxiosInstance.interceptors.response.use(
       processQueue(refreshError as AxiosError);
       isRefreshing = false;
 
-      // If you have a logout handler, use that here
-      localStorage.removeItem("user");
+      // Logout on refresh failure
+      store.dispatch(clearUser());
       if (typeof window !== "undefined") {
-        window.location.href = "/";
+        window.location.href = "/login";
       }
 
       return Promise.reject(refreshError);

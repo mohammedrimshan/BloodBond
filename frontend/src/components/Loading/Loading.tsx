@@ -1,73 +1,134 @@
-import { useEffect, useState } from "react";
+/**
+ * Loading.tsx
+ * ─────────────────────────────────────────────────────────────
+ * Cinematic entry loader using the Blood Donation Lottie animation.
+ *
+ * Sequence:
+ *   0 s    → Lottie plays, loader visible
+ *   2.5 s  → "BloodBond" brand text fades in
+ *   3.4 s  → subtitle fades in (staggered)
+ *   5.5 s  → whole loader fades out
+ *   6.2 s  → onComplete() fires → main app renders
+ */
 
-interface Drop {
-  id: number;
-  left: number;
-  delay: number;
-  duration: number;
-  size: number;
-  opacity: number;
-  drift: number;
-}
+import { useEffect, useRef, useState } from "react";
+import Lottie from "lottie-react";
+import bloodAnimation from "../../assets/Blood Donation.json";
+
+type Phase = "play" | "text" | "fadeout";
 
 type Props = {
   onComplete: () => void;
 };
 
 const Loading = ({ onComplete }: Props) => {
-  const [drops, setDrops] = useState<Drop[]>([]);
+  const [phase, setPhase]     = useState<Phase>("play");
+  const [opacity, setOpacity] = useState(1);
+  const doneRef               = useRef(false);
+
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onComplete();
+  };
 
   useEffect(() => {
-    // Generate falling blood drops
-    const generatedDrops: Drop[] = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 3,
-      duration: 6 + Math.random() * 6,
-      size: 10 + Math.random() * 12,
-      opacity: 0.2 + Math.random() * 0.3,
-      drift: -30 + Math.random() * 60,
-    }));
+    const t1 = setTimeout(() => setPhase("text"),    2500);
+    const t2 = setTimeout(() => { setPhase("fadeout"); setOpacity(0); }, 5500);
+    const t3 = setTimeout(finish, 6200);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    setDrops(generatedDrops);
+  /* ── styles ──────────────────────────────────────────────── */
+  const shown = phase === "text";
 
-    const timer = setTimeout(() => {
-      onComplete();
-    }, 6000);
+  const wrapper: React.CSSProperties = {
+    position:       "fixed",
+    inset:          0,
+    zIndex:         50,
+    display:        "flex",
+    flexDirection:  "column",
+    alignItems:     "center",
+    justifyContent: "center",
+    background:     "hsl(0 40% 96%)",   // soft peach
+    opacity,
+    transition:     "opacity 0.7s ease",
+    pointerEvents:  phase === "fadeout" ? "none" : "all",
+    gap:            "0px",
+  };
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+  const lottieWrap: React.CSSProperties = {
+    width:      "min(360px, 70vw)",
+    height:     "min(360px, 70vw)",
+    flexShrink: 0,
+  };
+
+  const brandWrap: React.CSSProperties = {
+    display:       "flex",
+    flexDirection: "column",
+    alignItems:    "center",
+    marginTop:     "-16px",   // tuck up slightly under the animation
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontFamily:    "'Inter', 'Segoe UI', system-ui, sans-serif",
+    fontSize:      "clamp(2.4rem, 7vw, 4.5rem)",
+    fontWeight:    800,
+    letterSpacing: "0.12em",
+    lineHeight:    1,
+    margin:        0,
+    userSelect:    "none",
+    opacity:       shown ? 1 : 0,
+    transform:     shown ? "translateY(0) scale(1)" : "translateY(10px) scale(0.93)",
+    transition:    "opacity 1.1s cubic-bezier(0.22,1,0.36,1), transform 1.1s cubic-bezier(0.22,1,0.36,1)",
+    textShadow:    "0 3px 24px rgba(107,0,0,0.18)",
+  };
+
+  const lineStyle: React.CSSProperties = {
+    width:           shown ? "56px" : "0px",
+    height:          "2px",
+    background:      "linear-gradient(90deg, transparent, hsl(0 70% 40%), transparent)",
+    margin:          "10px 0 12px",
+    transition:      "width 0.9s cubic-bezier(0.22,1,0.36,1) 0.3s",
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    fontFamily:    "'Inter', 'Segoe UI', system-ui, sans-serif",
+    fontSize:      "clamp(0.7rem, 1.8vw, 0.88rem)",
+    fontWeight:    400,
+    letterSpacing: "0.26em",
+    color:         "hsl(0 15% 40%)",
+    userSelect:    "none",
+    margin:        0,
+    opacity:       shown ? 1 : 0,
+    transform:     shown ? "translateY(0)" : "translateY(8px)",
+    transition:    "opacity 1.0s ease 0.9s, transform 1.0s ease 0.9s",
+  };
 
   return (
-    <div className="fixed inset-0 bg-peach flex items-center justify-center overflow-hidden z-50">
-      {/* Falling blood drops */}
-      <div className="absolute inset-0 pointer-events-none">
-        {drops.map((drop) => (
-          <div
-            key={drop.id}
-            className="absolute top-[-10%] bg-burgundy rounded-[50%_50%_50%_50%/60%_60%_40%_40%] animate-fall"
-            style={{
-              left: `${drop.left}%`,
-              width: `${drop.size}px`,
-              height: `${drop.size * 1.3}px`,
-              opacity: drop.opacity,
-              animationDelay: `${drop.delay}s`,
-              animationDuration: `${drop.duration}s`,
-              transform: `translateX(${drop.drift}px)`,
-            }}
-          />
-        ))}
+    <div style={wrapper}>
+      {/* Lottie animation */}
+      <div style={lottieWrap}>
+        <Lottie
+          animationData={bloodAnimation}
+          loop
+          autoplay
+          style={{ width: "100%", height: "100%" }}
+        />
       </div>
 
-      {/* BloodBond Title */}
-      <div className="relative text-center">
-        <h1 className="text-5xl font-extrabold tracking-widest animate-pulse">
-          <span className="text-burgundy">Blood</span>
-          <span className="text-muted-foreground">Bond</span>
+      {/* Brand text */}
+      <div style={brandWrap}>
+        <h1 style={titleStyle}>
+          <span style={{ color: "hsl(0 70% 40%)" }}>Blood</span>
+          <span style={{ color: "hsl(0 15% 38%)" }}>Bond</span>
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Donate • Connect • Save Lives
-        </p>
+
+        {/* Decorative line */}
+        <div style={lineStyle} />
+
+        <p style={subtitleStyle}>Donate&nbsp;•&nbsp;Connect&nbsp;•&nbsp;Save&nbsp;Lives</p>
       </div>
     </div>
   );

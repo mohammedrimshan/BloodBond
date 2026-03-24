@@ -16,6 +16,10 @@ import { UserController } from "./controllers/user.controller";
 import { CloudinaryService } from "./services/cloudinary.service";
 import userRoutes from "./routes/user.route";
 import asyncHandler from "express-async-handler";
+import adminRoutes from "./admin/routes/admin.route";
+import { AdminRepository } from "./admin/repositories/admin.repository";
+import { AdminService } from "./admin/services/admin.service";
+import { AdminController } from "./admin/controllers/admin.controller";
 
 dotenv.config();
 
@@ -57,9 +61,15 @@ const userService = new UserService(userRepository, cloudinaryService);
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
 
+// Instantiate admin architecture
+const adminRepository = new AdminRepository();
+const adminService = new AdminService(adminRepository);
+const adminController = new AdminController(adminService);
+
 // Routes
 app.use("/api/auth", authRoutes(authController));
 app.use("/api/users", userRoutes(userController));
+app.use("/api/admin", adminRoutes(adminController));
 
 // Health check
 app.get("/", (req: Request, res: Response) => {

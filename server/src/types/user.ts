@@ -18,6 +18,8 @@ export interface IUser {
   pincode?: string;
   district?: string;
   isEligible?: boolean;
+  isBlocked?: boolean;
+  role?: "user" | "admin";
   createdAt?: Date;
   refreshToken?: string;
 }

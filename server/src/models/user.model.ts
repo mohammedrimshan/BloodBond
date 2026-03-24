@@ -20,6 +20,8 @@ const userSchema = new Schema<UserDocument>(
     pincode: String,
     district: String,
     isEligible: { type: Boolean, default: true },
+    isBlocked: { type: Boolean, default: false },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
     refreshToken: String,
     createdAt: { type: Date, default: Date.now },
   },

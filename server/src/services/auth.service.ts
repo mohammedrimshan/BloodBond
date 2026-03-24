@@ -169,6 +169,12 @@ export class AuthService implements IAuthService {
         StatusCode.BAD_REQUEST
       );
     }
+    if (user.isBlocked) {
+      throw new AppError(
+        ERROR_MESSAGES.USER_IS_BLOCKED,
+        StatusCode.FORBIDDEN
+      );
+    }
     const isMatch = await bcrypt.compare(password, user.password!);
     if (!isMatch) {
       throw new AppError(
