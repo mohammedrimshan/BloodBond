@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { Response } from "express";
 import { UserModel } from "../../models/user.model";
 import { UserDocument, IUser } from "../../types/user";
 import { AdminJwtPayload } from "../../types/admin";
@@ -21,7 +20,7 @@ import { IAdminRepository } from "../interfaces/repository-interface/admin-repos
 export class AdminService implements IAdminService {
   constructor(private adminRepository: IAdminRepository) {}
 
-  async login(email: string, password: string, res: Response): Promise<UserDocument> {
+  async login(email: string, password: string): Promise<{ admin: UserDocument; accessToken: string; refreshToken: string }> {
     const user = await UserModel.findOne({ email, role: "admin" });
     if (!user) {
       throw new AppError(ERROR_MESSAGES.INVALID_ADMIN_CREDENTIALS, StatusCode.UNAUTHORIZED);
@@ -41,26 +40,11 @@ export class AdminService implements IAdminService {
     const accessToken = createAdminAccessToken(payload);
     const refreshToken = createAdminRefreshToken(payload);
 
-    res.cookie("x-admin-access-token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    res.cookie("x-admin-refresh-token", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return user;
+    return { admin: user, accessToken, refreshToken };
   }
 
-  async logout(res: Response): Promise<void> {
-    res.clearCookie("x-admin-access-token");
-    res.clearCookie("x-admin-refresh-token");
+  async logout(): Promise<void> {
+    // Business logic for logout if any (e.g., token blacklisting)
   }
 
   async getAllUsers(query: GetUsersQuery): Promise<PaginatedUsers> {

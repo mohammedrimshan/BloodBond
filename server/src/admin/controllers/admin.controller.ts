@@ -1,116 +1,91 @@
 import { Request, Response } from "express";
+import asyncHandler from "express-async-handler";
 import { IAdminController } from "../interfaces/controller-interface/admin-controller.interface";
 import { IAdminService } from "../interfaces/services-interface/admin-service.interface";
 import { StatusCode } from "../../constants/statusCode";
-import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "../../constants/messages";
-import { AppError } from "../../utils/appError";
+import { SUCCESS_MESSAGES } from "../../constants/messages";
 
 export class AdminController implements IAdminController {
   constructor(private adminService: IAdminService) {}
 
-  async login(req: Request, res: Response): Promise<void> {
-    try {
-      const { email, password } = req.body;
-      const user = await this.adminService.login(email, password, res);
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: SUCCESS_MESSAGES.ADMIN_LOGIN_SUCCESS,
-        admin: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        }
-      });
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ success: false, message: error.message });
-      } else {
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
+  login = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const { admin, accessToken, refreshToken } = await this.adminService.login(email, password);
+
+    res.cookie("x-admin-access-token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("x-admin-refresh-token", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(StatusCode.OK).json({
+      success: true,
+      message: SUCCESS_MESSAGES.ADMIN_LOGIN_SUCCESS,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role
       }
-    }
-  }
+    });
+  });
 
-  async logout(req: Request, res: Response): Promise<void> {
-    try {
-      await this.adminService.logout(res);
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: SUCCESS_MESSAGES.ADMIN_LOGOUT_SUCCESS
-      });
-    } catch {
-      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-    }
-  }
+  logout = asyncHandler(async (req: Request, res: Response) => {
+    await this.adminService.logout();
+    
+    res.clearCookie("x-admin-access-token");
+    res.clearCookie("x-admin-refresh-token");
+    
+    res.status(StatusCode.OK).json({
+      success: true,
+      message: SUCCESS_MESSAGES.ADMIN_LOGOUT_SUCCESS
+    });
+  });
 
-  async getAllUsers(req: Request, res: Response): Promise<void> {
-    try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const search = req.query.search as string;
-      const bloodGroup = req.query.bloodGroup as string;
-      const district = req.query.district as string;
+  getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string;
+    const bloodGroup = req.query.bloodGroup as string;
+    const district = req.query.district as string;
 
-      const result = await this.adminService.getAllUsers({ page, limit, search, bloodGroup, district });
-      res.status(StatusCode.OK).json({ success: true, ...result });
-    } catch {
-      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-    }
-  }
+    const result = await this.adminService.getAllUsers({ page, limit, search, bloodGroup, district });
+    res.status(StatusCode.OK).json({ success: true, ...result });
+  });
 
-  async getUserStats(req: Request, res: Response): Promise<void> {
-    try {
-      const stats = await this.adminService.getUserStats();
-      res.status(StatusCode.OK).json({ success: true, stats });
-    } catch {
-      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-    }
-  }
+  getUserStats = asyncHandler(async (req: Request, res: Response) => {
+    const stats = await this.adminService.getUserStats();
+    res.status(StatusCode.OK).json({ success: true, stats });
+  });
 
-  async getUserById(req: Request, res: Response): Promise<void> {
-    try {
-      const user = await this.adminService.getUserById(req.params.id);
-      res.status(StatusCode.OK).json({ success: true, user });
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ success: false, message: error.message });
-      } else {
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-      }
-    }
-  }
+  getUserById = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.adminService.getUserById(req.params.id);
+    res.status(StatusCode.OK).json({ success: true, user });
+  });
 
-  async updateUser(req: Request, res: Response): Promise<void> {
-    try {
-      const user = await this.adminService.updateUser(req.params.id, req.body);
-      res.status(StatusCode.OK).json({ 
-        success: true, 
-        message: SUCCESS_MESSAGES.UPDATE_SUCCESS,
-        user 
-      });
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ success: false, message: error.message });
-      } else {
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-      }
-    }
-  }
+  updateUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.adminService.updateUser(req.params.id, req.body);
+    res.status(StatusCode.OK).json({ 
+      success: true, 
+      message: SUCCESS_MESSAGES.UPDATE_SUCCESS,
+      user 
+    });
+  });
 
-  async toggleBlockUser(req: Request, res: Response): Promise<void> {
-    try {
-      const user = await this.adminService.toggleBlockUser(req.params.id);
-      res.status(StatusCode.OK).json({ 
-        success: true, 
-        message: user.isBlocked ? SUCCESS_MESSAGES.USER_BLOCKED : SUCCESS_MESSAGES.USER_UNBLOCKED,
-        user 
-      });
-    } catch (error: any) {
-      if (error instanceof AppError) {
-        res.status(error.statusCode).json({ success: false, message: error.message });
-      } else {
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: ERROR_MESSAGES.SERVER_ERROR });
-      }
-    }
-  }
+  toggleBlockUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.adminService.toggleBlockUser(req.params.id);
+    res.status(StatusCode.OK).json({ 
+      success: true, 
+      message: user.isBlocked ? SUCCESS_MESSAGES.USER_BLOCKED : SUCCESS_MESSAGES.USER_UNBLOCKED,
+      user 
+    });
+  });
 }

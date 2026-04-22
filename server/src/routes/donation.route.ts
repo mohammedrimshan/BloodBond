@@ -7,10 +7,10 @@ export default function donationRoutes(donationController: DonationController): 
   const router = Router();
 
   // Public endpoint for landing page carousel
-  router.get("/recent", asyncHandler(donationController.getRecentDonations.bind(donationController)));
+  router.get("/recent", donationController.getRecentDonations.bind(donationController));
 
   // User history endpoint
-  router.get("/me", verifyAuth, asyncHandler(donationController.getMyDonations.bind(donationController)));
+  router.get("/me", verifyAuth, donationController.getMyDonations.bind(donationController));
 
   return router;
 }

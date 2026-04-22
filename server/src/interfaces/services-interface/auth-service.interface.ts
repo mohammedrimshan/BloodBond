@@ -1,4 +1,3 @@
-import { Response } from "express";
 import { UserDocument } from "../../types/user";
 export interface IAuthService {
   register(
@@ -8,19 +7,18 @@ export interface IAuthService {
       phoneNumber: string;
       password: string;
       photoBase64?: string;
-    },
-    res: Response
+    }
   ): Promise<UserDocument>;
 
-  verifyOtp(userId: string, otp: string, res: Response): Promise<UserDocument>;
+  verifyOtp(userId: string, otp: string): Promise<{ user: UserDocument; accessToken: string; refreshToken: string }>;
 
   resendOtp(email: string): Promise<void>;
 
-  login(email: string, password: string, res: Response): Promise<UserDocument>;
+  login(email: string, password: string): Promise<{ user: UserDocument; accessToken: string; refreshToken: string }>;
 
-  refreshToken(accessToken: string, refreshToken: string, res: Response): Promise<void>;
+  refreshToken(accessToken: string, refreshToken: string): Promise<{ accessToken: string; refreshToken: string } | void>;
 
-  logout(userId: string, res: Response): Promise<void>;
+  logout(userId: string): Promise<void>;
 
   getMe(userId: string): Promise<UserDocument>;
 }

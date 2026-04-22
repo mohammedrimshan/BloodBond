@@ -11,11 +11,9 @@ import {
   verifyRefreshToken,
 } from "./jwt.service";
 import { OtpService } from "./otp.generate.service";
-import { setCookies } from "../utils/helpers/setCookies.helper";
-import { Response } from "express";
-import { IUserRepository } from "../interfaces/repository-interface/user-repository.interface";
 import { IOtpRepository } from "../interfaces/repository-interface/otp-repository.interface";
 import { IAuthService } from "../interfaces/services-interface/auth-service.interface";
+import { IUserRepository } from "../interfaces/repository-interface/user-repository.interface";
 
 export class AuthService implements IAuthService {
   constructor(
@@ -35,10 +33,8 @@ export class AuthService implements IAuthService {
       bloodGroup?: string;
       place?: string;
       lastDonatedDate?: string;
-      whatsappNumber?: string;
-    },
-    res: Response
-  ): Promise<UserDocument> {
+    whatsappNumber?: string;
+  }): Promise<UserDocument> {
     console.log("AuthService - Input data:", {
       name: data.name,
       email: data.email,
@@ -100,9 +96,8 @@ export class AuthService implements IAuthService {
 
   async verifyOtp(
     userId: string,
-    otp: string,
-    res: Response
-  ): Promise<UserDocument> {
+    otp: string
+  ): Promise<{ user: UserDocument; accessToken: string; refreshToken: string }> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, StatusCode.NOT_FOUND);
@@ -132,9 +127,8 @@ export class AuthService implements IAuthService {
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
     await this.userRepository.update(userId, { refreshToken });
-    setCookies(res, accessToken, refreshToken);
 
-    return updatedUser;
+    return { user: updatedUser, accessToken, refreshToken };
   }
 
   async resendOtp(email: string): Promise<void> {
@@ -153,9 +147,8 @@ export class AuthService implements IAuthService {
 
   async login(
     email: string,
-    password: string,
-    res: Response
-  ): Promise<UserDocument> {
+    password: string
+  ): Promise<{ user: UserDocument; accessToken: string; refreshToken: string }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new AppError(
@@ -190,16 +183,14 @@ export class AuthService implements IAuthService {
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
     await this.userRepository.update(user._id.toString(), { refreshToken });
-    setCookies(res, accessToken, refreshToken);
 
-    return user;
+    return { user, accessToken, refreshToken };
   }
 
   async refreshToken(
     accessToken: string,
-    refreshToken: string,
-    res: Response
-  ): Promise<void> {
+    refreshToken: string
+  ): Promise<{ accessToken: string; refreshToken: string } | void> {
     if (!refreshToken) {
       throw new AppError(ERROR_MESSAGES.TOKEN_MISSING, StatusCode.UNAUTHORIZED);
     }
@@ -238,17 +229,15 @@ export class AuthService implements IAuthService {
       await this.userRepository.update(user._id.toString(), {
         refreshToken: newRefreshToken,
       });
-      setCookies(res, newAccessToken, newRefreshToken);
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
   }
 
-  async logout(userId: string, res: Response): Promise<void> {
+  async logout(userId: string): Promise<void> {
     const user = await this.userRepository.findById(userId);
     if (user) {
       await this.userRepository.update(userId, { refreshToken: undefined });
     }
-    res.clearCookie("x-access-token");
-    res.clearCookie("x-refresh-token");
   }
 
   async getMe(userId: string): Promise<UserDocument> {

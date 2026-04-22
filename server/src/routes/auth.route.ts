@@ -9,12 +9,12 @@ import { IAuthController } from "../interfaces/controller-interface/auth-control
 export default function authRoutes(authController: IAuthController): Router {
   const router = Router();
 
-  router.post("/register", validate(registerUserSchema), asyncHandler(authController.register.bind(authController)));
-  router.post("/login", validate(loginSchema), asyncHandler(authController.login.bind(authController)));
-  router.post("/verify-otp", validate(verifyOtpSchema), asyncHandler(authController.verifyOTP.bind(authController)));
-  router.post("/resend-otp", validate(createOtpSchema), asyncHandler(authController.resendOTP.bind(authController)));
-  router.post("/refresh-token", asyncHandler(authController.refreshToken.bind(authController)));
-  router.post("/logout", asyncHandler(authController.logout.bind(authController)));
+  router.post("/register", validate(registerUserSchema), authController.register.bind(authController));
+  router.post("/login", validate(loginSchema), authController.login.bind(authController));
+  router.post("/verify-otp", validate(verifyOtpSchema), authController.verifyOTP.bind(authController));
+  router.post("/resend-otp", validate(createOtpSchema), authController.resendOTP.bind(authController));
+  router.post("/refresh-token", authController.refreshToken.bind(authController));
+  router.post("/logout", authController.logout.bind(authController));
 
   return router;
 }
