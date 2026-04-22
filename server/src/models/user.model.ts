@@ -15,6 +15,7 @@ const userSchema = new Schema<UserDocument>(
     bloodGroup: String,
     place: String,
     lastDonatedDate: Date,
+    nextEligibleDate: Date,
     whatsappNumber: String,
     address: String,
     pincode: String,

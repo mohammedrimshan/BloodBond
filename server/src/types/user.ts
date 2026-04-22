@@ -13,6 +13,7 @@ export interface IUser {
   bloodGroup?: string;
   place?: string;
   lastDonatedDate?: Date;
+  nextEligibleDate?: Date;
   whatsappNumber?: string;
   address?: string;
   pincode?: string;

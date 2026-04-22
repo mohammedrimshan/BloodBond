@@ -117,6 +117,23 @@ const Users = () => {
                           </td>
                         </tr>
                       ))
+                    ) : data?.users.length === 0 ? (
+                      <tr className="flex flex-col md:table-row">
+                        <td colSpan={5} className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center gap-4 text-slate-600">
+                             <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800">
+                               <Search size={32} className="opacity-20" />
+                             </div>
+                             <p className="text-sm font-bold tracking-widest uppercase">No participants found matching your criteria</p>
+                             <button 
+                               onClick={() => setFilters({ page: 1, limit: 10, search: "" })}
+                               className="text-xs font-black text-red-500 hover:text-red-400 transition-colors uppercase tracking-[0.2em]"
+                             >
+                               Reset All Filters
+                             </button>
+                          </div>
+                        </td>
+                      </tr>
                     ) : (
                       data?.users.map((user) => (
                         <motion.tr 
@@ -131,8 +148,12 @@ const Users = () => {
                           <td className="px-6 py-5 lg:px-8 md:py-6 border-b border-white/[0.03] md:border-none">
                             <div className="flex items-center gap-4">
                                <div className="relative shrink-0">
-                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center font-bold text-red-500 text-lg shadow-inner group-hover:border-red-500/30 transition-colors">
-                                    {user.name.charAt(0).toUpperCase()}
+                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center font-bold text-red-500 text-lg shadow-inner group-hover:border-red-500/30 transition-all overflow-hidden">
+                                    {user.photoUrl ? (
+                                      <img src={user.photoUrl} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                      user.name.charAt(0).toUpperCase()
+                                    )}
                                  </div>
                                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-lg border-2 border-slate-900 ${user.isBlocked ? 'bg-red-500' : 'bg-green-500'}`} />
                                </div>

@@ -44,6 +44,7 @@ export class DonationRepository {
   async updateUserInfoAfterDonation(userId: string, date: Date, nextDate: Date): Promise<void> {
     await UserModel.findByIdAndUpdate(userId, {
       lastDonatedDate: date,
+      nextEligibleDate: nextDate,
       isEligible: false,
     });
   }
