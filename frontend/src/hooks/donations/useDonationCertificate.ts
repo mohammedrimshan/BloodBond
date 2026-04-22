@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { privateAxiosInstance } from "@/api/privateAxios.Instance";
 
 export const useDonationCertificate = (donationId: string) => {
   return useQuery({
     queryKey: ["donation-certificate", donationId],
     queryFn: async () => {
-      const { data } = await axios.get(`/api/donations/${donationId}/certificate`, { withCredentials: true });
-      return data.donation;
+      const { data } = await privateAxiosInstance.get(`/donations/${donationId}/certificate`);
+      return data.donation || null;
     },
     enabled: !!donationId,
   });

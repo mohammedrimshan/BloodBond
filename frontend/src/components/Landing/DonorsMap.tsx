@@ -78,11 +78,11 @@ const DonorsMap: React.FC<Props> = ({ donors, center = [10.8505, 76.2711], zoom 
         
         <RecenterMap center={center} />
 
-        {donorsWithLocation.map((donor) => {
+        {donorsWithLocation.map((donor, idx) => {
           const [lng, lat] = donor.location!.coordinates;
           return (
             <Marker 
-              key={donor.id} 
+              key={donor.id || (donor as any)._id || idx} 
               position={[lat, lng] as any} 
               icon={createDonorIcon(donor.bloodGroup, donor.isEligible) as any}
             >

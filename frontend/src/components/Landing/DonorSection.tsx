@@ -144,8 +144,8 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
           <DonorsMap donors={filteredDonors} center={userLocation ? [userLocation.lat, userLocation.lng] : undefined} zoom={userLocation ? 13 : undefined} />
         ) : filteredDonors.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredDonors.map((donor) => (
-              <div key={donor.id} className="relative group">
+            {filteredDonors.map((donor, idx) => (
+              <div key={donor.id || (donor as any)._id || idx} className="relative group">
                 <DonorCard donor={donor} />
                 {isNearbyMode && <div className="absolute -top-3 -right-3 z-20 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-white">NEARBY</div>}
               </div>

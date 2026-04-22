@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Award, Download, Loader2 } from 'lucide-react';
+import { Award, Loader2 } from 'lucide-react';
 import { useDonationCertificate } from '@/hooks/donations/useDonationCertificate';
 import CertificateTemplate from './CertificateTemplate';
 import { downloadCertificate } from '@/utils/certificateDownloader';
@@ -16,25 +16,26 @@ const CertificateButton: React.FC<Props> = ({ donationId }) => {
 
   const { data: donation, isLoading } = useDonationCertificate(shouldFetch ? donationId : "");
 
-  const handleDownload = async () => {
-    // If we haven't fetched yet, trigger fetch and wait
-    if (!shouldFetch) {
+  const handleDownload = React.useCallback(async () => {
+    if (isDownloading) return;
+
+    if (!donation) {
       setShouldFetch(true);
       return;
     }
 
-    // Ensure donation data and ref are ready
-    if (donation && certificateRef.current) {
+    if (certificateRef.current) {
       setIsDownloading(true);
       const loadingToast = toast.loading("Generating your Hero Certificate...");
       
       try {
-        // Short delay to ensure browser has rendered the template
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Ensure browser has painted the hidden template
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         await downloadCertificate(certificateRef.current, donation.userId.name);
         toast.dismiss(loadingToast);
         toast.success("Certificate downloaded! You are a hero.");
+        setShouldFetch(false); // Reset for next time if needed
       } catch (error) {
         toast.dismiss(loadingToast);
         toast.error("Failed to generate certificate. Please try again.");
@@ -43,14 +44,14 @@ const CertificateButton: React.FC<Props> = ({ donationId }) => {
         setIsDownloading(false);
       }
     }
-  };
+  }, [donation, isDownloading]);
 
-  // Trigger download automatically once data arrives after the first click
+  // Effect to trigger download once data is ready after first click
   React.useEffect(() => {
-    if (shouldFetch && donation && !isDownloading) {
+    if (shouldFetch && donation && !isLoading && !isDownloading) {
       handleDownload();
     }
-  }, [donation, shouldFetch]);
+  }, [donation, isLoading, shouldFetch, isDownloading, handleDownload]);
 
   return (
     <>
@@ -59,8 +60,9 @@ const CertificateButton: React.FC<Props> = ({ donationId }) => {
           e.stopPropagation();
           handleDownload();
         }}
-        disabled={isDownloading || (shouldFetch && isLoading)}
+        disabled={isDownloading}
         className="p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors group/btn relative disabled:opacity-50"
+        title="Download Certificate"
       >
         {isDownloading || (shouldFetch && isLoading) ? (
           <Loader2 size={16} className="animate-spin" />
@@ -69,30 +71,27 @@ const CertificateButton: React.FC<Props> = ({ donationId }) => {
         )}
       </button>
 
-      {/* 
-        The template must be in the DOM for html2canvas. 
-        Using opacity-0 and pointer-events-none instead of absolute positioning out of bounds.
-      */}
+      {/* Hidden template for PDF generation */}
       <div 
         style={{ 
-          position: 'absolute', 
-          left: 0, 
-          top: 0, 
+          position: 'fixed', 
+          left: '-9999px', 
+          top: '-9999px', 
           zIndex: -100, 
-          opacity: 0, 
-          pointerEvents: 'none',
-          transform: 'scale(0.1)' // Small enough not to cause scrollbars
+          visibility: 'hidden'
         }}
       >
-        {donation && (
-          <CertificateTemplate
-            ref={certificateRef}
-            donorName={donation.userId.name}
-            bloodGroup={donation.userId.bloodGroup}
-            date={donation.donatedAt}
-            certificateId={donation._id}
-          />
-        )}
+        <div style={{ visibility: 'visible' }}>
+          {donation && (
+            <CertificateTemplate
+              ref={certificateRef}
+              donorName={donation.userId.name}
+              bloodGroup={donation.userId.bloodGroup}
+              date={donation.donatedAt}
+              certificateId={donation._id}
+            />
+          )}
+        </div>
       </div>
     </>
   );
