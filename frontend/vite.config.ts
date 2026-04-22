@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    host: true, // Listen on all network interfaces to prevent 502 bad gateway with tunnels
+    allowedHosts: ['.loca.lt'],
+  },
 })

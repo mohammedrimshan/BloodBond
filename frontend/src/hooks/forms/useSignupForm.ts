@@ -93,6 +93,7 @@ export function useSignupForm() {
   const handleSignup = useCallback(
     (e: React.FormEvent) => {
       const result = signupSchema.safeParse(form.values);
+      console.log(result);
       if (!result.success) {
         toast.error(AUTH_TOASTS.VALIDATION_ERROR);
       }

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import OTPModal from "../Modal/OtpModal";
-import bloodDonationIllustration from "@/assets/bloodDonationIllustration.png";
+const bloodDonationIllustration = "https://res.cloudinary.com/daee3szbl/image/upload/q_auto,f_auto/v1/bloodbond_assets/bloodDonationIllustration.png";
 import { useSignupForm } from "@/hooks/forms/useSignupForm";
 
 const Signup = () => {

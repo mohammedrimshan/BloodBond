@@ -48,10 +48,10 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
         {/* Section Header + CTA */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Our <span className="text-primary">Donors</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              Our <span className="text-red-600">Donors</span>
             </h2>
-            <p className="mt-1 text-sm sm:text-base text-muted-foreground">
+            <p className="text-slate-500 mt-1 text-sm font-medium">
               Meet the heroes saving lives in your community
             </p>
           </div>

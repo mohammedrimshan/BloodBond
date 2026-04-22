@@ -12,15 +12,19 @@ import {
   Mail, 
   MapPin,
   MoreHorizontal,
-  Info
+  Info,
+  Droplets
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDonations } from "@/hooks/useDonations";
 
 const Users = () => {
   const [filters, setFilters] = useState({ page: 1, limit: 10, search: "" });
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const { data, isLoading } = useAdminUsers({ ...filters, search: debouncedSearch });
   const blockMutation = useBlockUser();
+  const { useMarkAsDonated } = useDonations();
+  const markAsDonated = useMarkAsDonated();
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
   useEffect(() => {
@@ -54,10 +58,10 @@ const Users = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-7xl mx-auto"
+      className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8"
     >
           {/* Header Section */}
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-2">
             <div>
               <h1 className="text-3xl font-extrabold text-white tracking-tight">User Management</h1>
               <p className="text-slate-400 mt-1.5 font-medium">Manage and monitor platform participants</p>
@@ -86,15 +90,15 @@ const Users = () => {
             variants={itemVariants}
             className="bg-slate-900/40 backdrop-blur-xl border border-slate-800/60 rounded-[2rem] overflow-hidden shadow-2xl shadow-black/20"
           >
-            <div className="overflow-x-auto md:overflow-visible custom-scrollbar">
+            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full text-left border-collapse">
                 <thead className="hidden md:table-header-group">
                   <tr className="bg-slate-900/60 text-slate-500 text-[11px] font-black uppercase tracking-[0.15em] border-b border-slate-800/50">
-                    <th className="px-8 py-6">Identity</th>
-                    <th className="px-8 py-6">Blood Type</th>
-                    <th className="px-8 py-6">Location</th>
-                    <th className="px-8 py-6">Account Status</th>
-                    <th className="px-8 py-6 text-right">Privacy & Control</th>
+                    <th className="px-6 py-6 lg:px-8">Identity</th>
+                    <th className="px-6 py-6">Blood Type</th>
+                    <th className="px-6 py-6">Location</th>
+                    <th className="px-6 py-6">Account Status</th>
+                    <th className="px-6 py-6 text-right">Privacy & Control</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/40 flex flex-col md:table-row-group p-4 md:p-0">
@@ -124,7 +128,7 @@ const Users = () => {
                           onClick={() => setSelectedUser(user)}
                         >
                           {/* Identity Card Header (Mobile Only) / Cell (Desktop) */}
-                          <td className="px-6 py-5 md:px-8 md:py-6 border-b border-white/[0.03] md:border-none">
+                          <td className="px-6 py-5 lg:px-8 md:py-6 border-b border-white/[0.03] md:border-none">
                             <div className="flex items-center gap-4">
                                <div className="relative shrink-0">
                                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center font-bold text-red-500 text-lg shadow-inner group-hover:border-red-500/30 transition-colors">
@@ -143,7 +147,7 @@ const Users = () => {
                           </td>
 
                           {/* Blood Group */}
-                          <td className="px-6 py-4 md:px-8 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
+                          <td className="px-6 py-4 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
                             <span className="md:hidden text-[10px] font-black uppercase tracking-widest text-slate-600">Blood Type</span>
                             <span className="inline-flex items-center px-3 py-1 rounded-xl bg-red-500/5 text-red-500 text-[11px] font-black tracking-tighter border border-red-500/10">
                               {user.bloodGroup || "—"}
@@ -151,7 +155,7 @@ const Users = () => {
                           </td>
 
                           {/* Location */}
-                          <td className="px-6 py-4 md:px-8 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
+                          <td className="px-6 py-4 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
                             <span className="md:hidden text-[10px] font-black uppercase tracking-widest text-slate-600">Location</span>
                             <div className="flex items-center gap-1.5 text-slate-400">
                               <MapPin size={13} className="text-slate-600" />
@@ -160,7 +164,7 @@ const Users = () => {
                           </td>
 
                           {/* Account Status */}
-                          <td className="px-6 py-4 md:px-8 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
+                          <td className="px-6 py-4 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
                             <span className="md:hidden text-[10px] font-black uppercase tracking-widest text-slate-600">Status</span>
                              {user.isBlocked ? (
                                <div className="flex items-center gap-2 text-red-500">
@@ -176,8 +180,21 @@ const Users = () => {
                           </td>
 
                           {/* Actions */}
-                          <td className="px-6 py-5 md:px-8 md:py-6 md:table-cell">
+                          <td className="px-6 py-5 lg:px-8 md:py-6 md:table-cell">
                             <div className="flex items-center justify-end gap-3">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); markAsDonated.mutate(user._id); }}
+                                disabled={markAsDonated.isPending || user.isEligible === false}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${
+                                  user.isEligible === false
+                                    ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50"
+                                    : "bg-red-600 hover:bg-red-500 text-white shadow-red-900/40 hover:scale-[1.02] active:scale-[0.98]"
+                                }`}
+                                title={user.isEligible === false ? "Next donation not yet available" : "Mark as Donated"}
+                              >
+                                <Droplets size={16} className={user.isEligible === false ? "opacity-30" : "animate-pulse"} />
+                                <span className="hidden sm:inline">DONATED</span>
+                              </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); setSelectedUser(user); }}
                                 className="p-2.5 bg-slate-800/50 md:bg-transparent text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all"

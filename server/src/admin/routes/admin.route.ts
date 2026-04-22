@@ -1,9 +1,9 @@
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
-import { IAdminController } from "../interfaces/controller-interface/admin-controller.interface";
 import { verifyAdmin } from "../../middlewares/admin.middleware";
+import { DonationController } from "../../controllers/donation.controller";
 
-export default function adminRoutes(adminController: IAdminController): Router {
+export default function adminRoutes(adminController: any, donationController: DonationController): Router {
   const router = Router();
 
   router.post("/auth/login", asyncHandler(adminController.login.bind(adminController)));
@@ -14,6 +14,9 @@ export default function adminRoutes(adminController: IAdminController): Router {
   router.get("/users/:id", verifyAdmin, asyncHandler(adminController.getUserById.bind(adminController)));
   router.put("/users/:id", verifyAdmin, asyncHandler(adminController.updateUser.bind(adminController)));
   router.patch("/users/:id/block", verifyAdmin, asyncHandler(adminController.toggleBlockUser.bind(adminController)));
+
+  router.post("/users/:userId/donate", verifyAdmin, asyncHandler(donationController.markAsDonated.bind(donationController)));
+  router.get("/donations", verifyAdmin, asyncHandler(donationController.getAllDonations.bind(donationController)));
 
   return router;
 }

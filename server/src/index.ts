@@ -20,6 +20,10 @@ import adminRoutes from "./admin/routes/admin.route";
 import { AdminRepository } from "./admin/repositories/admin.repository";
 import { AdminService } from "./admin/services/admin.service";
 import { AdminController } from "./admin/controllers/admin.controller";
+import donationRoutes from "./routes/donation.route";
+import { DonationRepository } from "./repository/donation.repository";
+import { DonationService } from "./services/donation.service";
+import { DonationController } from "./controllers/donation.controller";
 
 dotenv.config();
 
@@ -48,6 +52,8 @@ app.use((req, res, next) => {
 // Instantiate repositories
 const userRepository = new UserRepository();
 const otpRepository = new OtpRepository();
+const adminRepository = new AdminRepository();
+const donationRepository = new DonationRepository();
 
 // Instantiate external services
 const cloudinaryService = new CloudinaryService();
@@ -56,20 +62,24 @@ const cloudinaryService = new CloudinaryService();
 const otpService = new OtpService(otpRepository);
 const authService = new AuthService(userRepository, otpRepository, otpService);
 const userService = new UserService(userRepository, cloudinaryService);
+const adminService = new AdminService(adminRepository);
+const donationService = new DonationService(donationRepository, adminRepository);
 
 // Instantiate controllers
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
-
-// Instantiate admin architecture
-const adminRepository = new AdminRepository();
-const adminService = new AdminService(adminRepository);
 const adminController = new AdminController(adminService);
+const donationController = new DonationController(donationService);
+
+// Inject donation methods into admin controller for simplified routing (or keep separate)
+// Given the existing structure, I'll add the methods to AdminController directly or use the donationController in routes.
+// Let's use the donationController in routes for better separation.
 
 // Routes
 app.use("/api/auth", authRoutes(authController));
 app.use("/api/users", userRoutes(userController));
-app.use("/api/admin", adminRoutes(adminController));
+app.use("/api/admin", adminRoutes(adminController, donationController));
+app.use("/api/donations", donationRoutes(donationController));
 
 // Health check
 app.get("/", (req: Request, res: Response) => {

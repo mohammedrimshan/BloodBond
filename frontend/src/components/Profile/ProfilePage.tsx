@@ -24,6 +24,8 @@ import { logoutUser } from "@/Service/authService";
 import { getProfile } from "@/Service/userService";
 import { PROFILE_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
+import { useDonations } from "@/hooks/useDonations";
+import type { IDonation } from "@/types/DonationTypes";
 
 const ProfilePage = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -78,10 +80,16 @@ const ProfilePage = () => {
   };
 
   const age = calculateAge(user.dateOfBirth);
-  const lastDonation = user.lastDonatedDate ? formatDate(user.lastDonatedDate) : "Not provided";
+  
+  const { useMyDonations } = useDonations();
+  const { data: donationsData, isLoading: historyLoading } = useMyDonations();
+  
+  const lastDonation = user.lastDonatedDate ? formatDate(user.lastDonatedDate) : "Not yet";
+  const donationHistory = donationsData?.donations || [];
 
-  // Donation history is currently not implemented in backend, keeping empty array
-  const donationHistory: any[] = [];
+  // Find the next eligible date from the latest donation
+  const latestDonation = donationHistory[0] as IDonation | undefined;
+  const nextEligibleDate = latestDonation ? formatDate(latestDonation.nextEligibleDate) : null;
 
   const aboutFields = [
     {
@@ -230,10 +238,10 @@ const ProfilePage = () => {
                 value: lastDonation,
               },
               {
-                icon: <Activity size={18} className="text-green-600" />,
-                iconBg: "bg-green-50",
+                icon: <Activity size={18} className={user.isEligible ? "text-green-600" : "text-amber-500"} />,
+                iconBg: user.isEligible ? "bg-green-50" : "bg-amber-50",
                 label: "Eligibility",
-                value: user.isEligible ? "Eligible" : "Not Eligible",
+                value: user.isEligible ? "Ready to Donate" : `Available on ${nextEligibleDate}`,
               },
             ].map((stat, i) => (
               <div
@@ -334,14 +342,18 @@ const ProfilePage = () => {
               </span>
             </div>
 
-            {donationHistory.length > 0 ? (
+            {historyLoading ? (
+              <div className="px-7 py-10 text-center animate-pulse">
+                <p className="text-slate-300 text-sm font-medium">Loading history...</p>
+              </div>
+            ) : donationHistory.length > 0 ? (
               <>
                 <div className="flex justify-between px-7 py-2.5 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
                   <span>Date</span>
-                  <span>Units</span>
+                  <span>Status</span>
                 </div>
                 <div className="px-1.5 pb-1.5">
-                  {donationHistory.map((item, index) => (
+                  {donationHistory.map((item: IDonation, index) => (
                     <div
                       key={index}
                       className="flex justify-between items-center px-5 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/80 rounded-xl transition-all group"
@@ -349,11 +361,11 @@ const ProfilePage = () => {
                       <div className="flex items-center gap-3">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-200 group-hover:bg-red-500 transition-all shrink-0" />
                         <span className="text-slate-600 font-semibold text-sm">
-                          {item.date}
+                          {formatDate(item.donatedAt)}
                         </span>
                       </div>
-                      <span className="bg-slate-50 text-slate-800 border border-slate-100 text-[12px] font-bold px-3 py-1 rounded-lg group-hover:bg-red-50 group-hover:text-red-700 transition-all">
-                        {item.units} ml
+                      <span className="bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-3 py-1 rounded-lg">
+                        SUCCESS
                       </span>
                     </div>
                   ))}

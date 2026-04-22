@@ -12,6 +12,7 @@ import Login from "@/components/Auth/Login";
 import Signup from "@/components/Auth/SignUp";
 import Loading from "@/components/Loading/Loading";
 import LandingPage from "@/components/Landing/LandingPage";
+import DonorsPage from "@/components/Landing/DonorsPage";
 import ProfilePage from "@/components/Profile/ProfilePage";
 import EditProfilePage from "@/components/Profile/EditProfilePage";
 import Navbar from "@/components/Navbar/Navbar";
@@ -71,8 +72,9 @@ const AppContent = () => {
         <Route element={<LoadingWrapper />}>
           {/* Pages with Navbar */}
           <Route element={<NavbarLayout />}>
-            {/* Public landing page */}
+            {/* Public pages */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/donors" element={<DonorsPage />} />
 
             {/* Auth-only pages */}
             <Route element={<AuthProtectedRoute />}>

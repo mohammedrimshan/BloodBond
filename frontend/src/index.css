@@ -26,6 +26,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
   }
@@ -35,6 +38,7 @@
   from {
     transform: translateY(0) rotate(0deg);
   }
+
   to {
     transform: translateY(120vh) rotate(180deg);
   }
@@ -44,4 +48,13 @@
   animation-name: fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
