@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useDonations } from "@/hooks/useDonations";
 import type { IDonation } from "@/types/DonationTypes";
 import CertificateButton from "@/components/Donation/CertificateButton";
+import DonationHistoryCalendar from "./DonationHistoryCalendar";
 
 const ProfilePage = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -384,20 +385,8 @@ const ProfilePage = () => {
             )}
           </div>
 
-          {/* Calendar (Dummy for now as per design request) */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden opacity-50 grayscale">
-            <div className="px-6 py-4 flex items-center justify-between border-b border-slate-50 bg-slate-50/30">
-              <h2 className="text-[14px] font-bold text-slate-800 flex items-center gap-2.5">
-                <Calendar size={15} className="text-slate-500" />
-                History View
-              </h2>
-            </div>
-            <div className="p-8 text-center">
-              <p className="text-[11px] text-slate-300 font-medium">
-                Calendar view will be available once history is added.
-              </p>
-            </div>
-          </div>
+          {/* Calendar View */}
+          <DonationHistoryCalendar donations={donationHistory} />
         </div>
       </div>
     </div>
