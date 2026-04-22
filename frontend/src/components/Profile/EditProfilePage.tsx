@@ -1,5 +1,6 @@
 import { useForm } from "@/hooks/forms/useForm";
 import { updateProfileSchema, type UpdateProfileFormData } from "@/validations/auth.schema";
+import { toast } from "sonner";
 import { useUpdateProfile } from "@/hooks/users/useUpdateProfile";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
@@ -21,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LocationPicker from "./LocationPicker";
 import ImageCropper from "./ImageCropper";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -35,8 +37,11 @@ const EditProfilePage = () => {
   );
   const [base64Avatar, setBase64Avatar] = useState<string | null>(null);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    user.location?.coordinates?.[0] ? { lat: user.location.coordinates[1], lng: user.location.coordinates[0] } : null
+  );
 
-  const { values, errors, handleChange, handleBlur, handleSubmit } =
+  const { values, errors, handleChange, handleBlur, handleSubmit, setMultipleValues } =
     useForm<UpdateProfileFormData>({
       schema: updateProfileSchema,
       initialValues: {
@@ -48,6 +53,7 @@ const EditProfilePage = () => {
         bloodGroup: user.bloodGroup || "",
         place: user.place || "",
         district: user.district || "",
+        state: user.state || "",
         address: user.address || "",
         pincode: user.pincode || "",
         whatsappNumber: user.whatsappNumber || "",
@@ -57,10 +63,15 @@ const EditProfilePage = () => {
       },
       onSubmit: async (data) => {
         try {
-          // Add the base64 avatar to the data if selected
-          const updateData = { ...data };
+          const updateData: any = { ...data };
           if (base64Avatar) {
-            (updateData as any).profileImage = base64Avatar;
+            updateData.profileImage = base64Avatar;
+          }
+          if (location) {
+            updateData.location = {
+              type: "Point",
+              coordinates: [location.lng, location.lat]
+            };
           }
           
           await updateProfileMutation.mutateAsync(updateData);
@@ -70,6 +81,10 @@ const EditProfilePage = () => {
         }
       },
     });
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setLocation({ lat, lng });
+  };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -358,8 +373,19 @@ const EditProfilePage = () => {
                   value={values.district || ""}
                   onChange={(e) => handleChange("district", e.target.value)}
                   onBlur={() => handleBlur("district")}
-                  placeholder="e.g. Ernakulam"
+                  placeholder="e.g. Malappuram"
                   hasError={!!errors.district}
+                />
+              </Field>
+
+              <Field label="State" icon={<MapPin size={13} />} error={errors.state}>
+                <StyledInput
+                  name="state"
+                  value={values.state || ""}
+                  onChange={(e) => handleChange("state", e.target.value)}
+                  onBlur={() => handleBlur("state")}
+                  placeholder="e.g. Kerala"
+                  hasError={!!errors.state}
                 />
               </Field>
 
@@ -392,6 +418,27 @@ const EditProfilePage = () => {
                 error={errors.address}
                 className="lg:col-span-4"
               >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
+                    <LocationPicker 
+                      onLocationSelect={handleLocationSelect} 
+                      onAddressFound={(data) => {
+                        const addr = data.address;
+                        console.log("🗺️ Full Address Data:", data);
+                        
+                        // Single atomic update — no race conditions
+                        setMultipleValues({
+                          district: addr.state_district || "",
+                          place: addr.county || "",
+                          pincode: addr.postcode || "",
+                          state: addr.state || "",
+                          address: data.display_name || "",
+                        } as any);
+                        
+                        toast.success(`Location Identified: ${addr.county || addr.state_district}`);
+                      }}
+                      initialLocation={user.location} 
+                    />
+                </div>
                 <StyledInput
                   name="address"
                   value={values.address || ""}

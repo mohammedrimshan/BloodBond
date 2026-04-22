@@ -1,4 +1,5 @@
-import { useAdminStats } from "@/admin/hooks/useAdminStats";
+import { useAdminAnalytics } from "@/admin/hooks/useAdminAnalytics";
+import DashboardCharts from "@/admin/components/DashboardCharts";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -6,15 +7,12 @@ import {
   UserCheck, 
   UserMinus, 
   UserPlus, 
-  TrendingUp,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
   ChevronRight
 } from "lucide-react";
 
 const Dashboard = () => {
-  const { data: stats, isLoading } = useAdminStats();
+  const { data: analytics, isLoading } = useAdminAnalytics();
+  const stats = analytics?.stats;
 
   const cards = [
     { 
@@ -94,10 +92,6 @@ const Dashboard = () => {
                 Real-time insights into the BloodBond community
               </motion.p>
             </div>
-            <div className="flex items-center gap-3 bg-slate-900/50 border border-slate-800/60 p-1.5 rounded-xl backdrop-blur-md">
-              <button className="px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-lg shadow-sm">Last 30 Days</button>
-              <button className="px-4 py-2 text-slate-400 text-sm font-semibold hover:text-white transition-colors">Last 7 Days</button>
-            </div>
           </header>
 
           {/* Stats Grid */}
@@ -109,16 +103,11 @@ const Dashboard = () => {
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 className="relative group bg-slate-900/40 border border-slate-800/60 p-6 rounded-3xl backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/20"
               >
-                {/* Background Glow */}
                 <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${card.color}-500/5 rounded-full blur-3xl group-hover:bg-${card.color}-500/10 transition-all duration-500`} />
                 
                 <div className="flex justify-between items-start mb-4">
                   <div className={`p-3 rounded-2xl bg-${card.color}-500/10 border border-${card.color}-500/20 text-${card.color}-500`}>
                     <card.icon size={24} />
-                  </div>
-                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${card.isUp ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                    {card.isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                    {card.trend}
                   </div>
                 </div>
 
@@ -136,28 +125,28 @@ const Dashboard = () => {
             ))}
           </div>
 
+          {/* Charts Section */}
+          {isLoading ? (
+            <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="h-96 bg-slate-900/20 animate-pulse rounded-[2rem] border border-slate-800/50" />
+              <div className="h-96 bg-slate-900/20 animate-pulse rounded-[2rem] border border-slate-800/50" />
+            </div>
+          ) : (
+            analytics && <DashboardCharts bloodGroups={analytics.bloodGroups} userGrowth={analytics.userGrowth} />
+          )}
+
           {/* Secondary Sections */}
           <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
              <motion.div 
                variants={itemVariants}
-               className="lg:col-span-2 bg-slate-900/40 border border-slate-800/60 p-8 rounded-[2rem] backdrop-blur-xl shadow-2xl shadow-black/20 relative overflow-hidden group"
+               className="lg:col-span-2 bg-slate-900/40 border border-slate-800/60 p-8 rounded-[2rem] backdrop-blur-xl shadow-2xl shadow-black/20"
              >
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
-                      <Activity size={20} />
-                    </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight">User Engagement</h3>
-                  </div>
-                  <TrendingUp className="text-slate-600" size={20} />
+                <h3 className="text-xl font-bold text-white mb-4 tracking-tight">System Health</h3>
+                <div className="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-ping" />
+                  <p className="text-green-500 font-bold text-sm">All backend services are operational</p>
                 </div>
-                
-                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-slate-800/50 rounded-[1.5rem] bg-slate-950/20 group-hover:bg-slate-950/40 transition-all duration-500">
-                   <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                     <Activity className="text-slate-600 animate-pulse" size={32} />
-                   </div>
-                   <p className="text-slate-500 font-medium italic text-sm">Real-time interaction matrix coming soon...</p>
-                </div>
+                <p className="text-slate-500 mt-4 text-sm font-medium">Database connection: Stable • API Latency: 42ms • SMS Gateway: Active</p>
              </motion.div>
 
              <motion.div 

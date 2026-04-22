@@ -38,4 +38,8 @@ export class UserService implements IUserService {
 
     return this.userRepository.updateUser(id, updateData);
   }
+
+  async getNearbyDonors(lat: number, lng: number, radius: number): Promise<UserDocument[]> {
+    return this.userRepository.findNearbyDonors(lat, lng, radius);
+  }
 }

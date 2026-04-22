@@ -88,4 +88,9 @@ export class AdminController implements IAdminController {
       user 
     });
   });
+
+  getAnalytics = asyncHandler(async (req: Request, res: Response) => {
+    const analytics = await this.adminService.getDashboardAnalytics();
+    res.status(StatusCode.OK).json({ success: true, ...analytics });
+  });
 }

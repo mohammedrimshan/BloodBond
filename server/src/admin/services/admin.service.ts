@@ -71,4 +71,18 @@ export class AdminService implements IAdminService {
     if (!user) throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, StatusCode.NOT_FOUND);
     return user;
   }
+
+  async getDashboardAnalytics(): Promise<any> {
+    const [stats, bloodGroups, userGrowth] = await Promise.all([
+      this.adminRepository.getUserStats(),
+      this.adminRepository.getBloodGroupStats(),
+      this.adminRepository.getUserGrowthStats(),
+    ]);
+
+    return {
+      stats,
+      bloodGroups,
+      userGrowth,
+    };
+  }
 }

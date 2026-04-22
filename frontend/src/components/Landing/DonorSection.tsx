@@ -1,14 +1,16 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { Search, HeartHandshake } from "lucide-react";
+import { Search, HeartHandshake, Map as MapIcon, LayoutGrid, Navigation, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DonorCard from "./DonorCard";
-import type { IDonorResponse } from "@/types/DonorTypes";
+import DonorsMap from "./DonorsMap";
+import type { IDonorResponse } from "../../types/DonorTypes";
 import type { RootState } from "@/store/store";
 import { DONOR_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
+import { useGetNearbyDonors } from "@/hooks/users/useUsers";
 
 interface DonorSectionProps {
   donors: IDonorResponse[];
@@ -20,19 +22,37 @@ const BLOOD_GROUPS = ["All", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] a
 const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBloodGroup, setSelectedBloodGroup] = useState<string>("All");
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isNearbyMode, setIsNearbyMode] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
   const navigate = useNavigate();
 
+  const { data: nearbyResponse, isLoading: isNearbyLoading } = useGetNearbyDonors(
+    userLocation?.lat || null,
+    userLocation?.lng || null,
+    10
+  );
+
+  if (isNearbyMode) {
+    console.log("📍 Nearby Donors Found:", nearbyResponse?.data?.map(d => ({
+      name: d.name,
+      coords: d.location?.coordinates,
+      dist: "within 10km"
+    })));
+  }
+
+  const activeDonors = isNearbyMode && nearbyResponse?.data ? nearbyResponse.data : donors;
+
   const filteredDonors = useMemo(() => {
-    return donors.filter((donor) => {
-      const matchesSearch = donor.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesBloodGroup =
-        selectedBloodGroup === "All" || donor.bloodGroup === selectedBloodGroup;
+    return activeDonors.filter((donor) => {
+      const matchesSearch = donor.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesBloodGroup = selectedBloodGroup === "All" || donor.bloodGroup === selectedBloodGroup;
       return matchesSearch && matchesBloodGroup;
     });
-  }, [donors, searchQuery, selectedBloodGroup]);
+  }, [activeDonors, searchQuery, selectedBloodGroup]);
 
   const handleBecomeDonor = () => {
     if (isLoggedIn) {
@@ -42,85 +62,98 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
     }
   };
 
+  const toggleNearby = () => {
+    if (!isNearbyMode) {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation is not supported by your browser");
+        return;
+      }
+      setIsLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("📡 Nearby Search Center Detected:", { latitude, longitude });
+          setUserLocation({
+            lat: latitude,
+            lng: longitude
+          });
+          setIsNearbyMode(true);
+          setIsLocating(false);
+          toast.success("Finding donors within 10km");
+        },
+        () => {
+          setIsLocating(false);
+          toast.error("Location access denied");
+        }
+      );
+    } else {
+      setIsNearbyMode(false);
+      setUserLocation(null);
+    }
+  };
+
   return (
     <section id="donors" className="py-12 sm:py-16 lg:py-20 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header + CTA */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              Our <span className="text-red-600">Donors</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+              Our <span className="text-red-600">Life-Savers</span>
             </h2>
-            <p className="text-slate-500 mt-1 text-sm font-medium">
-              Meet the heroes saving lives in your community
-            </p>
+            <p className="text-slate-500 mt-2 text-sm font-medium">Find and connect with blood donors</p>
           </div>
-          <Button
-            onClick={handleBecomeDonor}
-            className="bg-primary hover:bg-burgundy-light text-primary-foreground font-medium px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all"
-          >
-            <HeartHandshake size={18} className="mr-2" />
-            Become a Donor
-          </Button>
-        </div>
-
-        {/* Search + Filter */}
-        <div className="flex flex-col gap-4 mb-8">
-          {/* Search bar */}
-          <div className="relative max-w-md">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              type="text"
-              placeholder="Search donors by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-11 pl-10 bg-background border-border focus:border-primary focus:ring-primary rounded-xl"
-            />
-          </div>
-
-          {/* Blood group filter chips */}
-          <div className="flex flex-wrap gap-2">
-            {BLOOD_GROUPS.map((group) => (
-              <button
-                key={group}
-                onClick={() => setSelectedBloodGroup(group)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
-                  selectedBloodGroup === group
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-primary"
-                }`}
-              >
-                {group}
-              </button>
-            ))}
+          <div className="flex items-center gap-3">
+             <Button variant={isNearbyMode ? "default" : "outline"} onClick={toggleNearby} disabled={isLocating} className="rounded-xl px-5 h-12 font-bold">
+                {isLocating ? <Loader2 size={18} className="animate-spin mr-2" /> : <Navigation size={18} className="mr-2" />}
+                {isNearbyMode ? "Showing Nearby" : "Find Near Me"}
+              </Button>
+              <Button onClick={handleBecomeDonor} className="bg-slate-900 text-white font-bold px-6 h-12 rounded-xl">
+                <HeartHandshake size={18} className="mr-2" />
+                Become a Donor
+              </Button>
           </div>
         </div>
 
-        {/* Donor Cards Grid */}
-        {isLoading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="bg-slate-50/50 border border-slate-100 p-6 rounded-[2rem] mb-10">
+          <div className="flex flex-col lg:flex-row gap-6 justify-between items-center">
+            <div className="flex gap-4 w-full lg:w-auto">
+              <div className="relative w-full sm:w-80">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Input type="text" placeholder="Search by name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-12 pl-11 rounded-xl" />
+              </div>
+              <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200">
+                <button onClick={() => setViewMode("grid")} className={`p-2.5 rounded-lg ${viewMode === "grid" ? 'bg-red-600 text-white' : 'text-slate-400'}`}><LayoutGrid size={18} /></button>
+                <button onClick={() => setViewMode("map")} className={`p-2.5 rounded-lg ${viewMode === "map" ? 'bg-red-600 text-white' : 'text-slate-400'}`}><MapIcon size={18} /></button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {BLOOD_GROUPS.map((group) => (
+                <button key={group} onClick={() => setSelectedBloodGroup(group)} className={`px-4 py-2 rounded-xl text-xs font-bold border ${selectedBloodGroup === group ? "bg-red-600 text-white" : "bg-white text-slate-500"}`}>
+                  {group}
+                </button>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {isLoading || isNearbyLoading ? (
+          <div className="flex flex-col items-center py-24 gap-4">
+            <div className="w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin" />
+          </div>
+        ) : viewMode === "map" ? (
+          <DonorsMap donors={filteredDonors} center={userLocation ? [userLocation.lat, userLocation.lng] : undefined} zoom={userLocation ? 13 : undefined} />
         ) : filteredDonors.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDonors.map((donor) => (
-              <DonorCard key={donor.id} donor={donor} />
+              <div key={donor.id} className="relative group">
+                <DonorCard donor={donor} />
+                {isNearbyMode && <div className="absolute -top-3 -right-3 z-20 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-white">NEARBY</div>}
+              </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Search size={24} className="text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">
-              No donors found
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Try adjusting your search or filter criteria
-            </p>
+          <div className="flex flex-col items-center py-24 text-center">
+            <h3 className="text-2xl font-black text-slate-800 mb-2">No matching donors found</h3>
           </div>
         )}
       </div>

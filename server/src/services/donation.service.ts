@@ -47,4 +47,12 @@ export class DonationService {
   async getAllDonations(page: number, limit: number): Promise<any> {
     return this.donationRepository.findAll(page, limit);
   }
+
+  async getCertificateData(donationId: string): Promise<any> {
+    const donation = await this.donationRepository.findByIdWithUser(donationId);
+    if (!donation) {
+      throw new AppError("Donation record not found", StatusCode.NOT_FOUND);
+    }
+    return donation;
+  }
 }

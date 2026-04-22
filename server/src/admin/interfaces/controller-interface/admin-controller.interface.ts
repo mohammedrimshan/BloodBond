@@ -8,4 +8,5 @@ export interface IAdminController {
   getUserById: RequestHandler;
   updateUser: RequestHandler;
   toggleBlockUser: RequestHandler;
+  getAnalytics: RequestHandler;
 }

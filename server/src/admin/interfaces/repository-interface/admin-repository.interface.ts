@@ -29,4 +29,6 @@ export interface IAdminRepository {
   updateUserById(id: string, data: Partial<IUser>): Promise<UserDocument | null>;
   toggleBlockUser(id: string): Promise<UserDocument | null>;
   getUserStats(): Promise<UserStats>;
+  getBloodGroupStats(): Promise<any[]>;
+  getUserGrowthStats(): Promise<any[]>;
 }

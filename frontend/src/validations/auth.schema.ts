@@ -94,6 +94,7 @@ export const updateProfileSchema = z.object({
   bloodGroup: z.string().min(1, "Blood group is required"),
   place: z.string().min(1, "Place is required"),
   district: z.string().min(1, "District is required"),
+  state: z.string().min(1, "State is required"),
   address: z.string().min(5, "Address must be at least 5 characters"),
   pincode: z.string()
     .min(6, "Pincode must be 6 digits")

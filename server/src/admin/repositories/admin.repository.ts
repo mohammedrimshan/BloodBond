@@ -81,4 +81,28 @@ export class AdminRepository implements IAdminRepository {
       verified,
     };
   }
+
+  async getBloodGroupStats(): Promise<any[]> {
+    return UserModel.aggregate([
+      { $match: { role: { $ne: "admin" }, bloodGroup: { $ne: null } } },
+      { $group: { _id: "$bloodGroup", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+  }
+
+  async getUserGrowthStats(): Promise<any[]> {
+    return UserModel.aggregate([
+      { $match: { role: { $ne: "admin" } } },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+  }
 }

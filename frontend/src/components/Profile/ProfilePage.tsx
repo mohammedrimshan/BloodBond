@@ -26,6 +26,7 @@ import { PROFILE_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
 import { useDonations } from "@/hooks/useDonations";
 import type { IDonation } from "@/types/DonationTypes";
+import CertificateButton from "@/components/Donation/CertificateButton";
 
 const ProfilePage = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -364,9 +365,12 @@ const ProfilePage = () => {
                           {formatDate(item.donatedAt)}
                         </span>
                       </div>
-                      <span className="bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-3 py-1 rounded-lg">
-                        SUCCESS
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <CertificateButton donationId={item._id} />
+                        <span className="bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-3 py-1 rounded-lg">
+                          SUCCESS
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

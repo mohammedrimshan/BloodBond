@@ -7,6 +7,7 @@ export default function userRoutes(userController: IUserController): Router {
   const router = Router();
 
   router.get("/donors", userController.getDonors.bind(userController));
+  router.get("/nearby", userController.getNearbyDonors.bind(userController));
   router.get("/profile", verifyAuth, userController.getProfile.bind(userController));
   router.put("/profile", verifyAuth, userController.updateProfile.bind(userController));
 

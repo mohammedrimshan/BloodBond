@@ -30,6 +30,8 @@ export interface UseFormReturn<T extends Record<string, unknown>> {
   setFieldError: (field: keyof T, message: string) => void;
   /** Reset the entire form to initial values */
   reset: () => void;
+  /** Batch-update multiple fields at once (avoids race conditions) */
+  setMultipleValues: (fields: Partial<T>) => void;
 }
 
 // ─── Helper: extract field errors from ZodError ──────────────
@@ -81,15 +83,19 @@ export function useForm<T extends Record<string, unknown>>({
 
   const handleChange = useCallback(
     (field: keyof T, value: T[keyof T]) => {
-      const updated = { ...valuesRef.current, [field]: value };
-      setValues(updated);
-
-      const newTouched = { ...touched, [field]: true };
-      setTouched(newTouched);
-
-      validate(updated, newTouched);
+      setValues((prev) => {
+        const updated = { ...prev, [field]: value };
+        
+        setTouched((prevTouched) => {
+          const newTouched = { ...prevTouched, [field]: true };
+          validate(updated, newTouched);
+          return newTouched;
+        });
+        
+        return updated;
+      });
     },
-    [touched, validate]
+    [validate]
   );
 
   const handleBlur = useCallback(
@@ -135,6 +141,10 @@ export function useForm<T extends Record<string, unknown>>({
     setIsSubmitting(false);
   }, [initialValues]);
 
+  const setMultipleValues = useCallback((fields: Partial<T>) => {
+    setValues((prev) => ({ ...prev, ...fields }));
+  }, []);
+
   return {
     values,
     errors,
@@ -145,5 +155,6 @@ export function useForm<T extends Record<string, unknown>>({
     handleSubmit,
     setFieldError,
     reset,
+    setMultipleValues,
   };
 }

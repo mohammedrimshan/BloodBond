@@ -19,10 +19,46 @@ export class UserRepository
     return this.model.find({}).exec();
   }
 
+  async findNearbyDonors(lat: number, lng: number, radiusInKm: number): Promise<UserDocument[]> {
+    const radiusInRadians = radiusInKm / 6378.1; // Convert km to radians for MongoDB
+    return this.model.find({
+      role: "user",
+      isEligible: true,
+      location: {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radiusInRadians]
+        }
+      }
+    }).exec();
+  }
+
   async updateUser(
     id: string,
     data: Partial<IUser>
   ): Promise<UserDocument | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async getBloodGroupStats(): Promise<{ _id: string; count: number }[]> {
+    return this.model.aggregate([
+      { $match: { bloodGroup: { $ne: null } } },
+      { $group: { _id: "$bloodGroup", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+  }
+
+  async getUserGrowthStats(): Promise<{ _id: { month: number; year: number }; count: number }[]> {
+    return this.model.aggregate([
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
   }
 }

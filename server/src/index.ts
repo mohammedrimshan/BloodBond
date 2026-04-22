@@ -24,6 +24,7 @@ import donationRoutes from "./routes/donation.route";
 import { DonationRepository } from "./repository/donation.repository";
 import { DonationService } from "./services/donation.service";
 import { DonationController } from "./controllers/donation.controller";
+import { initRemindersCron } from "./utils/reminders.cron";
 
 dotenv.config();
 
@@ -92,6 +93,7 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
+  initRemindersCron();
   app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });

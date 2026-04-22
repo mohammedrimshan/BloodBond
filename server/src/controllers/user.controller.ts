@@ -38,4 +38,21 @@ export class UserController implements IUserController {
       data: updatedUser,
     });
   });
+
+  getNearbyDonors = asyncHandler(async (req: Request, res: Response) => {
+    const lat = parseFloat(req.query.lat as string);
+    const lng = parseFloat(req.query.lng as string);
+    const radius = parseFloat(req.query.radius as string) || 10;
+
+    if (isNaN(lat) || isNaN(lng)) {
+      res.status(StatusCode.BAD_REQUEST).json({ success: false, message: "Invalid coordinates" });
+      return;
+    }
+
+    const donors = await this.userService.getNearbyDonors(lat, lng, radius);
+    res.status(StatusCode.OK).json({
+      success: true,
+      data: donors,
+    });
+  });
 }

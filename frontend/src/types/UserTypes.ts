@@ -8,6 +8,7 @@ export interface IRegisterRequest {
   dateOfBirth?: string;
   bloodGroup?: string;
   place?: string;
+  state?: string;
   lastDonatedDate?: string;
   whatsappNumber?: string;
 }
@@ -37,7 +38,12 @@ export interface User {
   dateOfBirth?: string;
   bloodGroup?: string;
   place?: string;
+  state?: string;
   lastDonatedDate?: string;
   whatsappNumber?: string;
   isEligible?: boolean;
+  location?: {
+    type: string;
+    coordinates: number[];
+  };
 }

@@ -10,12 +10,17 @@ interface User {
   dateOfBirth?: string | null;
   bloodGroup?: string | null;
   place?: string | null;
+  state?: string | null;
   lastDonatedDate?: string | null;
   whatsappNumber?: string | null;
   address?: string | null;
   pincode?: string | null;
   district?: string | null;
   isEligible?: boolean;
+  location?: {
+    type: string;
+    coordinates: number[];
+  } | null;
 }
 
 interface UserState {
@@ -34,12 +39,14 @@ const initialState: UserState = {
     dateOfBirth: null,
     bloodGroup: null,
     place: null,
+    state: null,
     lastDonatedDate: null,
     whatsappNumber: null,
     address: null,
     pincode: null,
     district: null,
     isEligible: false,
+    location: null,
   },
   isLoggedIn: false,
 };

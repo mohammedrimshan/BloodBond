@@ -16,3 +16,8 @@ export const updateProfile = async (data: any): Promise<any> => {
   const response = await privateAxiosInstance.put("/users/profile", data);
   return response.data;
 };
+
+export const getNearbyDonors = async (lat: number, lng: number, radius: number = 10): Promise<IDonorsApiResponse> => {
+  const response = await publicAxiosInstance.get<IDonorsApiResponse>(`/users/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+  return response.data;
+};

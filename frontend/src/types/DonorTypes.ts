@@ -6,6 +6,10 @@ export interface IDonorResponse {
   lastDonatedDate?: string;
   photoUrl?: string;
   isEligible?: boolean;
+  location?: {
+    type: string;
+    coordinates: number[];
+  };
 }
 
 export interface IDonorsApiResponse {

@@ -47,4 +47,8 @@ export class DonationRepository {
       isEligible: false,
     });
   }
+
+  async findByIdWithUser(id: string): Promise<any> {
+    return DonationModel.findById(id).populate("userId", "name email bloodGroup photoUrl").lean();
+  }
 }

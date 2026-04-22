@@ -17,11 +17,16 @@ export interface IUser {
   address?: string;
   pincode?: string;
   district?: string;
+  state?: string;
   isEligible?: boolean;
   isBlocked?: boolean;
   role?: "user" | "admin";
   createdAt?: Date;
   refreshToken?: string;
+  location?: {
+    type: string;
+    coordinates: number[];
+  };
 }
 
 export interface UserDocument extends Document<Types.ObjectId>, IUser {}

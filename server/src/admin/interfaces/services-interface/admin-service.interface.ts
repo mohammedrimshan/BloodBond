@@ -9,4 +9,5 @@ export interface IAdminService {
   getUserById(id: string): Promise<UserDocument>;
   updateUser(id: string, data: Partial<IUser>): Promise<UserDocument>;
   toggleBlockUser(id: string): Promise<UserDocument>;
+  getDashboardAnalytics(): Promise<any>;
 }

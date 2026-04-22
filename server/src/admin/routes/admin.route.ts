@@ -10,6 +10,7 @@ export default function adminRoutes(adminController: any, donationController: Do
   router.post("/auth/logout", verifyAdmin, adminController.logout.bind(adminController));
 
   router.get("/users/stats", verifyAdmin, adminController.getUserStats.bind(adminController));
+  router.get("/analytics", verifyAdmin, adminController.getAnalytics.bind(adminController));
   router.get("/users", verifyAdmin, adminController.getAllUsers.bind(adminController));
   router.get("/users/:id", verifyAdmin, adminController.getUserById.bind(adminController));
   router.put("/users/:id", verifyAdmin, adminController.updateUser.bind(adminController));

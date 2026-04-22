@@ -12,5 +12,8 @@ export default function donationRoutes(donationController: DonationController): 
   // User history endpoint
   router.get("/me", verifyAuth, donationController.getMyDonations.bind(donationController));
 
+  // Certificate data endpoint
+  router.get("/:id/certificate", verifyAuth, donationController.getCertificateData.bind(donationController));
+
   return router;
 }

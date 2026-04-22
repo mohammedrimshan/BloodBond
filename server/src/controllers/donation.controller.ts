@@ -33,4 +33,10 @@ export class DonationController {
     const result = await this.donationService.getAllDonations(page, limit);
     res.status(StatusCode.OK).json({ success: true, ...result });
   });
+
+  getCertificateData = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const donation = await this.donationService.getCertificateData(id);
+    res.status(StatusCode.OK).json({ success: true, donation });
+  });
 }
