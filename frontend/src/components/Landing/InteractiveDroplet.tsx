@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-// Cloudinary configuration for the image sequence
-const CLOUDINARY_BASE_URL = "https://res.cloudinary.com/daee3szbl/image/upload/q_auto,f_auto/v1/bloodbond_frames";
+import { CLOUDINARY_ASSETS } from "@/constants/cloudinary";
+
 const TOTAL_FRAMES: number = 240;
 
-// Generate URLs dynamically
+// Generate URLs dynamically from the centralized asset path
 const frameUrls: string[] = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
   const frameNumber = String(i + 1).padStart(3, '0');
-  return `${CLOUDINARY_BASE_URL}/ezgif-frame-${frameNumber}.jpg`;
+  return `${CLOUDINARY_ASSETS.BLOOD_DROPS_ANIMATION}/ezgif-frame-${frameNumber}.jpg`;
 });
 
 const InteractiveDroplet = () => {
