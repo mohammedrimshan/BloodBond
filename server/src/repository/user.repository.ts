@@ -21,8 +21,7 @@ export class UserRepository
 
   async findNearbyDonors(lat: number, lng: number, radiusInKm: number): Promise<UserDocument[]> {
     const radiusInRadians = radiusInKm / 6378.1; // Convert km to radians for MongoDB
-    return this.model.find({
-      role: "user",
+    const donors = await this.model.find({
       isEligible: true,
       location: {
         $geoWithin: {
@@ -30,6 +29,10 @@ export class UserRepository
         }
       }
     }).exec();
+    
+    console.log(`📍 Nearby Search Found ${donors.length} donors.`);
+    donors.forEach(d => console.log(`   - ID: ${d._id}, Name: ${d.name}, Role: ${d.role}, Blocked: ${d.isBlocked}`));
+    return donors;
   }
 
   async updateUser(
