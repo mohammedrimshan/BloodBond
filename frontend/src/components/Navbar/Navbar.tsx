@@ -66,8 +66,16 @@ const Navbar = () => {
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                   className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
-                    {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || "U"}
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden">
+                    {user.photoUrl ? (
+                      <img 
+                        src={user.photoUrl} 
+                        alt={user.name || "User"} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || "U"
+                    )}
                   </div>
                   <span className="max-w-[100px] truncate">
                     {user.name || user.email || "User"}

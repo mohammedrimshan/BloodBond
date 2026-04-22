@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { UserModel } from "../../models/user.model";
 import { UserDocument, IUser } from "../../types/user";
 import { AdminJwtPayload } from "../../types/admin";
 import { AppError } from "../../utils/appError";
@@ -21,7 +20,7 @@ export class AdminService implements IAdminService {
   constructor(private adminRepository: IAdminRepository) {}
 
   async login(email: string, password: string): Promise<{ admin: UserDocument; accessToken: string; refreshToken: string }> {
-    const user = await UserModel.findOne({ email, role: "admin" });
+    const user = await this.adminRepository.findAdminByEmail(email);
     if (!user) {
       throw new AppError(ERROR_MESSAGES.INVALID_ADMIN_CREDENTIALS, StatusCode.UNAUTHORIZED);
     }

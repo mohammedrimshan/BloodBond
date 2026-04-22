@@ -23,6 +23,7 @@ export interface UserStats {
 }
 
 export interface IAdminRepository {
+  findAdminByEmail(email: string): Promise<UserDocument | null>;
   getAllUsers(query: GetUsersQuery): Promise<PaginatedUsers>;
   getUserById(id: string): Promise<UserDocument | null>;
   updateUserById(id: string, data: Partial<IUser>): Promise<UserDocument | null>;

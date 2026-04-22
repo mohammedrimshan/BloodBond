@@ -8,6 +8,10 @@ import {
 } from "../interfaces/repository-interface/admin-repository.interface";
 
 export class AdminRepository implements IAdminRepository {
+  async findAdminByEmail(email: string): Promise<UserDocument | null> {
+    return UserModel.findOne({ email, role: "admin" });
+  }
+
   async getAllUsers(query: GetUsersQuery): Promise<PaginatedUsers> {
     const { page, limit, search, bloodGroup, district } = query;
     const skip = (page - 1) * limit;

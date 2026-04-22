@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ImageCropper from "./ImageCropper";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -33,6 +34,7 @@ const EditProfilePage = () => {
     user.photoUrl || null
   );
   const [base64Avatar, setBase64Avatar] = useState<string | null>(null);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
   const { values, errors, handleChange, handleBlur, handleSubmit } =
     useForm<UpdateProfileFormData>({
@@ -73,16 +75,20 @@ const EditProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Optional: add file size validation here if you want
     if (file.size > 5 * 1024 * 1024) return;
 
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      setAvatarPreview(result);
-      setBase64Avatar(result);
+      setImageToCrop(result);
     };
     reader.readAsDataURL(file);
+  };
+
+  const onCropComplete = (croppedBase64: string) => {
+    setAvatarPreview(croppedBase64);
+    setBase64Avatar(croppedBase64);
+    setImageToCrop(null);
   };
 
   const removeAvatar = () => {
@@ -433,6 +439,14 @@ const EditProfilePage = () => {
           </form>
         </div>
       </div>
+
+      {imageToCrop && (
+        <ImageCropper
+          image={imageToCrop}
+          onCrop={onCropComplete}
+          onCancel={() => setImageToCrop(null)}
+        />
+      )}
     </div>
   );
 };
