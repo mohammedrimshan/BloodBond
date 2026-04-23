@@ -13,9 +13,6 @@ export const initRemindersCron = () => {
     
     try {
       const now = new Date();
-
-      // 1. Find all donations where the eligibility date has passed
-      // We populate the userId to get the user details directly
       const passedDonations = await DonationModel.find({
         nextEligibleDate: { $lte: now }
       }).populate("userId");
@@ -28,19 +25,12 @@ export const initRemindersCron = () => {
         try {
           const user = donation.userId as any;
           
-          // Skip if user was already processed in this run or doesn't exist
           if (!user || processedUserIds.has(user._id.toString())) continue;
 
-          // Only process if the user is currently marked as ineligible
           if (user.isEligible === false) {
-            // Update eligibility in DB
             await UserModel.findByIdAndUpdate(user._id, { isEligible: true });
-
-            // Send email reminder
             await sendReminderEmail(user.email, user.name);
             console.log(`✅ Eligibility updated and reminder sent to: ${user.email}`);
-            
-            // Mark as processed to avoid double-processing if they have multiple old donations
             processedUserIds.add(user._id.toString());
           }
         } catch (err) {
