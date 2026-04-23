@@ -12,7 +12,7 @@ import type { INotification } from "../Service/notificationService";
 export const useNotifications = () => {
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
   return useQuery<INotification[], Error>({
-    queryKey: ["notifications", isLoggedIn],
+    queryKey: ["notifications"],
     queryFn: getNotifications,
     enabled: isLoggedIn,
   });
@@ -21,7 +21,7 @@ export const useNotifications = () => {
 export const useUnreadCount = () => {
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
   return useQuery<number, Error>({
-    queryKey: ["notifications", "unread-count", isLoggedIn],
+    queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
     enabled: isLoggedIn,
   });
@@ -33,7 +33,6 @@ export const useMarkAsRead = () => {
     mutationFn: markAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
   });
 };
@@ -44,7 +43,6 @@ export const useMarkAllAsRead = () => {
     mutationFn: markAllAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
   });
 };

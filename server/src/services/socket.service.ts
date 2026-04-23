@@ -26,53 +26,53 @@ export class SocketService {
 
   private setupMiddleware() {
     this.io.use((socket: AuthenticatedSocket, next) => {
-      let token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(" ")[1];
-      let isAdminToken = false;
+      const tokenCandidates: { token: string; isAdmin: boolean }[] = [];
 
-      if (!token && socket.handshake.headers.cookie) {
+      // Check handshake auth/header first
+      const handshakeToken = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(" ")[1];
+      if (handshakeToken) {
+        tokenCandidates.push({ token: handshakeToken, isAdmin: false });
+      }
+
+      // Parse cookies and collect all available tokens
+      if (socket.handshake.headers.cookie) {
         const cookies = socket.handshake.headers.cookie.split(";").reduce((acc: any, cookie: string) => {
           const [name, value] = cookie.trim().split("=");
           acc[name] = value;
           return acc;
         }, {});
-        // Prefer admin token if present, otherwise use user token
+        if (cookies["x-access-token"]) {
+          tokenCandidates.push({ token: cookies["x-access-token"], isAdmin: false });
+        }
         if (cookies["x-admin-access-token"]) {
-          token = cookies["x-admin-access-token"];
-          isAdminToken = true;
-        } else {
-          token = cookies["x-access-token"];
+          tokenCandidates.push({ token: cookies["x-admin-access-token"], isAdmin: true });
         }
       }
 
-      console.log(`[Socket] Auth Token found: ${!!token} (isAdmin: ${isAdminToken})`);
-
-      if (!token) {
+      if (tokenCandidates.length === 0) {
         console.log(`[Socket] Rejecting connection: Token missing`);
         return next(new Error("Authentication error: Token missing"));
       }
 
-      try {
-        // Try user token first, then admin token
-        let decoded: any;
-        if (isAdminToken) {
-          decoded = verifyAdminAccessToken(token);
-        } else {
-          try {
-            decoded = verifyAccessToken(token);
-          } catch {
-            // Fallback: try admin token verification in case cookie name detection missed it
-            decoded = verifyAdminAccessToken(token);
-            isAdminToken = true;
-          }
+      // Try each token candidate until one succeeds
+      let lastError: any = null;
+      for (const candidate of tokenCandidates) {
+        try {
+          const decoded = candidate.isAdmin
+            ? verifyAdminAccessToken(candidate.token) as any
+            : verifyAccessToken(candidate.token) as any;
+          
+          socket.userId = decoded.id || decoded.userId || decoded._id;
+          socket.role = decoded.role || (candidate.isAdmin ? "admin" : undefined);
+          console.log(`[Socket] Authenticated User: ${socket.userId} (role: ${socket.role})`);
+          return next();
+        } catch (err: any) {
+          lastError = err;
         }
-        socket.userId = decoded.id || decoded.userId || decoded._id;
-        socket.role = decoded.role || (isAdminToken ? "admin" : undefined);
-        console.log(`[Socket] Authenticated User: ${socket.userId} (role: ${socket.role})`);
-        next();
-      } catch (err: any) {
-        console.log(`[Socket] Rejecting connection: Invalid token (${err.message})`);
-        next(new Error(`Authentication error: Invalid token (${err.message})`));
       }
+
+      console.log(`[Socket] Rejecting connection: Invalid token (${lastError?.message})`);
+      next(new Error(`Authentication error: Invalid token (${lastError?.message})`));
     });
   }
 
@@ -103,7 +103,9 @@ export class SocketService {
 
   public sendToUser(userId: string, event: string, payload: any) {
     const roomId = userId.toString();
-    console.log(`[Socket] Sending ${event} to user room: ${roomId}`);
+    const room = this.io.sockets.adapter.rooms.get(roomId);
+    const socketCount = room ? room.size : 0;
+    console.log(`[Socket] Sending ${event} to user room: ${roomId} (${socketCount} sockets in room)`);
     this.io.to(roomId).emit(event, payload);
   }
 
