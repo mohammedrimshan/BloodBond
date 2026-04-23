@@ -1,69 +1,16 @@
 import { useState, useEffect } from "react";
-import { useGetEmergencies, useCreateEmergency, useUpdateEmergency } from "../hooks/useEmergency";
+import { useGetEmergencies } from "../hooks/useEmergency";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle, Activity, Plus, X, Droplet, UserCheck, Search, Filter } from "lucide-react";
-import { z } from "zod";
+import { Clock, CheckCircle, Activity, Plus, Search, Filter, Droplet } from "lucide-react";
+import EmergencyDrawer from "../components/EmergencyDrawer";
+import EmergencyModal from "../components/EmergencyModal";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-const emergencySchema = z.object({
-  patientName: z.string().min(2, "Patient name must be at least 2 characters").max(50, "Patient name is too long"),
-  hospitalName: z.string().min(2, "Hospital name must be at least 2 characters").max(200, "Hospital name is too long"),
-  bloodGroup: z.string().min(1, "Blood group is required"),
-});
-
 const Emergency = () => {
   const { data, isLoading } = useGetEmergencies();
-  const createMutation = useCreateEmergency();
-  const updateMutation = useUpdateEmergency();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ patientName: "", hospitalName: "", bloodGroup: "A+" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  const validateField = (name: string, value: string) => {
-    // Create a partial object to validate just the field being changed
-    const fieldData = { ...formData, [name]: value };
-    const result = emergencySchema.pick({ [name]: true } as any).safeParse(fieldData);
-    
-    if (result.success) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    } else {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      setErrors((prev) => ({
-        ...prev,
-        [name]: fieldErrors[name as keyof typeof fieldErrors]?.[0] || "Invalid field",
-      }));
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (touched[name]) {
-      validateField(name, value);
-    }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setTouched((prev) => ({ ...prev, [name]: true }));
-    validateField(name, value);
-  };
-
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
-  const [drawerStatus, setDrawerStatus] = useState<string>("");
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
-
-  // Hospital Autocomplete State
-  const [hospitalSuggestions, setHospitalSuggestions] = useState<any[]>([]);
-  const [isSearchingHospitals, setIsSearchingHospitals] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Search & Filter State
   const [searchInput, setSearchInput] = useState("");
@@ -77,13 +24,6 @@ const Emergency = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  useEffect(() => {
-    if (selectedRequest) {
-      setDrawerStatus(selectedRequest.status);
-      setSelectedUserId(selectedRequest.completedByUser?._id || "");
-    }
-  }, [selectedRequest]);
-
   // Update selectedRequest if data changes
   useEffect(() => {
     if (selectedRequest && data?.requests) {
@@ -93,90 +33,6 @@ const Emergency = () => {
       }
     }
   }, [data, selectedRequest]);
-
-  // Debounced API call for Hospital Autocomplete
-  useEffect(() => {
-    if (!formData.hospitalName || formData.hospitalName.trim().length < 3 || !showSuggestions) {
-      setHospitalSuggestions([]);
-      return;
-    }
-
-    const timeoutId = setTimeout(async () => {
-      setIsSearchingHospitals(true);
-      try {
-        // Use free OpenStreetMap Nominatim API
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            formData.hospitalName + " hospital in Kerala"
-          )}&limit=5`
-        );
-        const data = await response.json();
-        setHospitalSuggestions(data);
-      } catch (error) {
-        console.error("Failed to fetch hospital suggestions", error);
-      } finally {
-        setIsSearchingHospitals(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [formData.hospitalName, showSuggestions]);
-
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Mark all fields as touched
-    setTouched({
-      patientName: true,
-      hospitalName: true,
-      bloodGroup: true,
-    });
-
-    const result = emergencySchema.safeParse(formData);
-    
-    if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      const newErrors: Record<string, string> = {};
-      
-      // Extract the first error message for each field
-      Object.keys(fieldErrors).forEach((key) => {
-        if (fieldErrors[key as keyof typeof fieldErrors]?.length) {
-          newErrors[key] = fieldErrors[key as keyof typeof fieldErrors]![0];
-        }
-      });
-      
-      setErrors(newErrors);
-      return;
-    }
-
-    createMutation.mutate(formData, {
-      onSuccess: () => {
-        setIsModalOpen(false);
-        setFormData({ patientName: "", hospitalName: "", bloodGroup: "A+" });
-        setErrors({});
-        setTouched({});
-      }
-    });
-  };
-
-  const handleUpdateStatus = () => {
-    if (!selectedRequest) return;
-    
-    if (drawerStatus === "Completed" && !selectedUserId) {
-      alert("Please select the user who completed the donation.");
-      return;
-    }
-
-    updateMutation.mutate({ 
-      id: selectedRequest._id, 
-      status: drawerStatus, 
-      completedByUserId: drawerStatus === "Completed" ? selectedUserId : undefined 
-    }, {
-      onSuccess: () => {
-        // We let the useEffect handle updating the selectedRequest state
-      }
-    });
-  };
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -341,266 +197,17 @@ const Emergency = () => {
         </div>
       </motion.div>
 
-      {/* Slide-in Drawer for Selected Request */}
-      <AnimatePresence>
-        {selectedRequest && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setSelectedRequest(null)} 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
-            />
-            <motion.div 
-              initial={{ x: "100%" }} 
-              animate={{ x: 0 }} 
-              exit={{ x: "100%" }} 
-              transition={{ type: "spring", damping: 25, stiffness: 200 }} 
-              className="relative w-full max-w-md bg-slate-900 h-full border-l border-slate-800/60 shadow-2xl flex flex-col z-10 overflow-y-auto custom-scrollbar"
-            >
-              {/* Drawer Header */}
-              <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/80 sticky top-0 backdrop-blur-md z-20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center border border-red-500/20">
-                    <Droplet className="text-red-500 w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-black text-white tracking-tight">Request Details</h2>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Manage Status & Donors</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSelectedRequest(null)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+      {/* Extracted Slide-in Drawer */}
+      <EmergencyDrawer 
+        selectedRequest={selectedRequest} 
+        setSelectedRequest={setSelectedRequest} 
+      />
 
-              {/* Drawer Body */}
-              <div className="p-6 flex-1 space-y-8">
-                {/* Info Card */}
-                <div className="bg-slate-800/30 rounded-2xl p-5 border border-slate-800/60 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Patient Name</span>
-                    <span className="text-sm font-bold text-white">{selectedRequest.patientName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Hospital</span>
-                    <span className="text-sm font-semibold text-slate-300">{selectedRequest.hospitalName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Blood Group</span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-lg bg-red-500/10 text-red-500 text-xs font-black tracking-tighter border border-red-500/20">
-                      {selectedRequest.bloodGroup}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Ready Donors List */}
-                <div>
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                    <UserCheck size={14} className="text-emerald-500" />
-                    Ready Donors ({selectedRequest.readyUsers.length})
-                  </h3>
-                  
-                  {selectedRequest.readyUsers.length === 0 ? (
-                    <div className="bg-slate-800/20 rounded-xl p-4 text-center border border-slate-800/40 border-dashed">
-                      <p className="text-sm text-slate-500 font-medium">No donors have accepted yet.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {selectedRequest.readyUsers.map((u: any) => (
-                        <div key={u._id} className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                          <div className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700 overflow-hidden shrink-0">
-                            {u.photoUrl ? (
-                              <img src={u.photoUrl} alt={u.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
-                                {u.name.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-white truncate">{u.name}</p>
-                            <p className="text-[11px] text-slate-400 font-medium">{u.phoneNumber}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Status Update Form */}
-                <div className="space-y-4 pt-4 border-t border-slate-800/60">
-                  <div>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Update Status</label>
-                    <select
-                      value={drawerStatus}
-                      onChange={(e) => setDrawerStatus(e.target.value)}
-                      disabled={selectedRequest.status === "Completed"}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-red-500/50 disabled:opacity-50"
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="In Progress">In Progress</option>
-                      <option value="Completed">Completed</option>
-                    </select>
-                  </div>
-
-                  {drawerStatus === "Completed" && selectedRequest.status !== "Completed" && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Select Donated User</label>
-                      <select
-                        value={selectedUserId}
-                        onChange={(e) => setSelectedUserId(e.target.value)}
-                        className="w-full bg-slate-950 border border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500/80"
-                      >
-                        <option value="" disabled>-- Choose a User --</option>
-                        {selectedRequest.readyUsers.map((u: any) => (
-                          <option key={u._id} value={u._id}>{u.name} ({u.bloodGroup})</option>
-                        ))}
-                      </select>
-                      <p className="text-[10px] text-slate-500 mt-2">Selecting a user will mark their donation in the system and reset their eligibility timer.</p>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-
-              {/* Drawer Footer */}
-              <div className="p-6 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md sticky bottom-0">
-                <button
-                  onClick={handleUpdateStatus}
-                  disabled={updateMutation.isPending || selectedRequest.status === "Completed" || (drawerStatus === selectedRequest.status && selectedRequest.status !== "Completed")}
-                  className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-red-900/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {updateMutation.isPending ? "Saving..." : selectedRequest.status === "Completed" ? "Already Completed" : "Save Changes"}
-                </button>
-              </div>
-
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Create Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-              <h2 className="text-2xl font-black text-white mb-6 uppercase tracking-tight">Broadcast Emergency</h2>
-              <form onSubmit={handleCreate} className="space-y-5">
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">Patient Name</label>
-                  <input 
-                    type="text" 
-                    name="patientName"
-                    value={formData.patientName} 
-                    onChange={handleInputChange} 
-                    onBlur={handleBlur}
-                    className={`w-full bg-slate-950 border ${errors.patientName && touched.patientName ? 'border-red-500' : 'border-slate-800'} rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50`} 
-                  />
-                  {errors.patientName && touched.patientName ? (
-                    <p className="text-[10px] text-red-500 mt-1.5 font-bold">{errors.patientName}</p>
-                  ) : (
-                    <p className="text-[10px] text-slate-600 mt-1.5">* This will remain hidden from donors.</p>
-                  )}
-                </div>
-                <div className="relative">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">Hospital Name</label>
-                  <input 
-                    type="text" 
-                    name="hospitalName"
-                    value={formData.hospitalName} 
-                    onChange={(e) => {
-                      handleInputChange(e);
-                      setShowSuggestions(true);
-                    }} 
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={(e) => {
-                      handleBlur(e);
-                      setShowSuggestions(false);
-                    }}
-                    autoComplete="off"
-                    className={`w-full bg-slate-950 border ${errors.hospitalName && touched.hospitalName ? 'border-red-500' : 'border-slate-800'} rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50`} 
-                  />
-                  
-                  {/* Autocomplete Dropdown */}
-                  <AnimatePresence>
-                    {showSuggestions && formData.hospitalName.trim().length >= 3 && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        className="absolute z-50 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden"
-                      >
-                        {isSearchingHospitals ? (
-                          <div className="p-4 text-xs font-bold text-slate-400 text-center animate-pulse">Searching maps...</div>
-                        ) : hospitalSuggestions.length > 0 ? (
-                          <ul className="max-h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                            {hospitalSuggestions.map((hospital, idx) => {
-                              const parts = hospital.display_name.split(',');
-                              const mainName = parts[0].trim();
-                              const address = parts.slice(1).join(',').trim();
-                              
-                              return (
-                                <li 
-                                  key={idx}
-                                  onMouseDown={(e) => {
-                                    // Use onMouseDown to prevent the input from losing focus and closing the dropdown before the click registers
-                                    e.preventDefault(); 
-                                    setFormData(prev => ({ ...prev, hospitalName: hospital.display_name }));
-                                    setShowSuggestions(false);
-                                    validateField("hospitalName", hospital.display_name);
-                                  }}
-                                  className="px-4 py-3 hover:bg-slate-700 cursor-pointer border-b border-slate-700/50 last:border-0 transition-colors"
-                                >
-                                  <p className="text-sm font-bold text-white truncate">{mainName}</p>
-                                  <p className="text-[10px] text-slate-400 truncate mt-0.5">{address}</p>
-                                </li>
-                              )
-                            })}
-                          </ul>
-                        ) : (
-                          <div className="p-4 text-xs font-bold text-slate-400 text-center">
-                            No match found. Proceed with "{formData.hospitalName}".
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {errors.hospitalName && touched.hospitalName && (
-                    <p className="text-[10px] text-red-500 mt-1.5 font-bold">{errors.hospitalName}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">Blood Group</label>
-                  <select 
-                    name="bloodGroup"
-                    value={formData.bloodGroup} 
-                    onChange={handleInputChange} 
-                    onBlur={handleBlur}
-                    className={`w-full bg-slate-950 border ${errors.bloodGroup && touched.bloodGroup ? 'border-red-500' : 'border-slate-800'} rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50`}
-                  >
-                    {BLOOD_GROUPS.map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                  </select>
-                  {errors.bloodGroup && touched.bloodGroup && (
-                    <p className="text-[10px] text-red-500 mt-1.5 font-bold">{errors.bloodGroup}</p>
-                  )}
-                </div>
-                <div className="pt-4 flex gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all">Cancel</button>
-                  <button type="submit" disabled={createMutation.isPending} className="flex-1 py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-red-900/40 active:scale-[0.98] disabled:opacity-50">
-                    {createMutation.isPending ? "Sending..." : "Broadcast"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Extracted Create Modal */}
+      <EmergencyModal 
+        isModalOpen={isModalOpen} 
+        setIsModalOpen={setIsModalOpen} 
+      />
     </div>
   );
 };
