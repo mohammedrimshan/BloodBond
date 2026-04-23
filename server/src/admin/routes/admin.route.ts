@@ -17,6 +17,7 @@ export default function adminRoutes(adminController: any, donationController: Do
   router.patch("/users/:id/block", verifyAdmin, adminController.toggleBlockUser.bind(adminController));
 
   router.post("/users/:userId/donate", verifyAdmin, donationController.markAsDonated.bind(donationController));
+  router.get("/users/:userId/donations", verifyAdmin, donationController.getUserDonations.bind(donationController));
   router.get("/donations", verifyAdmin, donationController.getAllDonations.bind(donationController));
 
   return router;

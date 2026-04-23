@@ -62,10 +62,25 @@ export const useDonations = () => {
     });
   };
 
+  // Admin: Get a specific user's donations with date filter
+  const useAdminUserDonations = (userId: string, startDate?: string, endDate?: string) => {
+    return useQuery<{ success: boolean; donations: IDonation[] }>({
+      queryKey: ["admin", "donations", "user", userId, startDate, endDate],
+      queryFn: async () => {
+        const response = await adminAxios.get(`/users/${userId}/donations`, {
+          params: { startDate, endDate },
+        });
+        return response.data;
+      },
+      enabled: !!userId,
+    });
+  };
+
   return {
     useMarkAsDonated,
     useAllDonations,
     useMyDonations,
     useRecentDonations,
+    useAdminUserDonations,
   };
 };

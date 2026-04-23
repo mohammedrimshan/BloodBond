@@ -15,6 +15,26 @@ export class DonationRepository {
       .lean()) as unknown as DonationDocument[];
   }
 
+  async findByUserIdWithFilters(userId: string, startDate?: string, endDate?: string): Promise<DonationDocument[]> {
+    const query: any = { userId: new Types.ObjectId(userId) };
+
+    if (startDate || endDate) {
+      query.donatedAt = {};
+      if (startDate) {
+        query.donatedAt.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        query.donatedAt.$lte = end;
+      }
+    }
+
+    return (await DonationModel.find(query)
+      .sort({ donatedAt: -1 })
+      .lean()) as unknown as DonationDocument[];
+  }
+
   async findRecent(limit: number): Promise<any[]> {
     return (await DonationModel.find()
       .populate("userId", "name bloodGroup photoUrl")

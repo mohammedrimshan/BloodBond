@@ -40,6 +40,10 @@ export class DonationService {
     return this.donationRepository.findByUserId(userId);
   }
 
+  async getUserDonations(userId: string, startDate?: string, endDate?: string): Promise<any[]> {
+    return this.donationRepository.findByUserIdWithFilters(userId, startDate, endDate);
+  }
+
   async getRecentDonations(): Promise<any[]> {
     return this.donationRepository.findRecent(10);
   }

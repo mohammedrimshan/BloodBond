@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AdminUser } from "@/admin/hooks/useAdminUsers";
+import { useDonations } from "@/hooks/useDonations";
 import {
   X,
   Mail,
@@ -20,6 +21,7 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
+  History,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -51,7 +53,12 @@ const colorMap: Record<string, string> = {
 };
 
 const UserModal = ({ user, onClose }: UserModalProps) => {
-  const [activeTab, setActiveTab] = useState<"personal" | "platform">("personal");
+  const [activeTab, setActiveTab] = useState<"personal" | "platform" | "donations">("personal");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const { useAdminUserDonations } = useDonations();
+  const { data: donationData, isLoading: isLoadingDonations } = useAdminUserDonations(user._id, startDate, endDate);
 
   const initials = user.name
     .split(" ")
@@ -81,6 +88,7 @@ const UserModal = ({ user, onClose }: UserModalProps) => {
   const tabs = [
     { id: "personal", label: "Profile Info", icon: UserIcon },
     { id: "platform", label: "System Context", icon: Zap },
+    { id: "donations", label: "Donation History", icon: History },
   ];
 
   return (
@@ -197,7 +205,7 @@ const UserModal = ({ user, onClose }: UserModalProps) => {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as "personal" | "platform")}
+                  onClick={() => setActiveTab(tab.id as "personal" | "platform" | "donations")}
                   className={`flex items-center gap-2.5 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300 ${
                     activeTab === tab.id
                       ? "bg-red-600 text-white shadow-lg shadow-red-900/50"
@@ -225,52 +233,113 @@ const UserModal = ({ user, onClose }: UserModalProps) => {
                 exit={{ opacity: 0, x: -12 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(activeTab === "personal" ? personalDetails : platformDetails).map(
-                    (detail, idx) => (
-                      <DetailCard key={idx} {...detail} delay={idx * 0.045} />
-                    )
-                  )}
-                </div>
+                {activeTab !== "donations" ? (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {(activeTab === "personal" ? personalDetails : platformDetails).map(
+                        (detail, idx) => (
+                          <DetailCard key={idx} {...detail} delay={idx * 0.045} />
+                        )
+                      )}
+                    </div>
 
-                {/* Platform-only: Donation banner */}
-                {activeTab === "platform" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.32 }}
-                    className="mt-6 p-7 bg-red-600/[0.06] border border-red-600/[0.12] rounded-[2rem]"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-                      <div className="flex items-center gap-5">
-                        <div className="p-4 bg-red-600/20 rounded-2xl text-red-500 shrink-0">
-                          <HeartPulse size={26} />
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
-                            Physical Status
-                          </p>
-                          <p className="text-base font-bold text-white leading-snug">
-                            Last Donation:{" "}
-                            <span className="text-red-400">{fmt(user.lastDonatedDate)}</span>
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                            Donors are re-eligible 90 days after last donation
-                          </p>
-                        </div>
-                      </div>
-
-                      <div
-                        className={`self-start sm:self-auto px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border whitespace-nowrap ${
-                          user.isEligible
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                            : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                        }`}
+                    {/* Platform-only: Donation banner */}
+                    {activeTab === "platform" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.32 }}
+                        className="mt-6 p-7 bg-red-600/[0.06] border border-red-600/[0.12] rounded-[2rem]"
                       >
-                        {user.isEligible ? "✓ Active Donor" : "⏸ Eligibility Hold"}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+                          <div className="flex items-center gap-5">
+                            <div className="p-4 bg-red-600/20 rounded-2xl text-red-500 shrink-0">
+                              <HeartPulse size={26} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">
+                                Physical Status
+                              </p>
+                              <p className="text-base font-bold text-white leading-snug">
+                                Last Donation:{" "}
+                                <span className="text-red-400">{fmt(user.lastDonatedDate)}</span>
+                              </p>
+                              <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                                Donors are re-eligible 90 days after last donation
+                              </p>
+                            </div>
+                          </div>
+
+                          <div
+                            className={`self-start sm:self-auto px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border whitespace-nowrap ${
+                              user.isEligible
+                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            }`}
+                          >
+                            {user.isEligible ? "✓ Active Donor" : "⏸ Eligibility Hold"}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/[0.05]">
+                      <div className="flex-1 w-full">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">From Date</label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50"
+                        />
+                      </div>
+                      <div className="flex-1 w-full">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 block">To Date</label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50"
+                        />
+                      </div>
+                      <div className="sm:self-end w-full sm:w-auto">
+                        <button
+                          onClick={() => { setStartDate(""); setEndDate(""); }}
+                          className="w-full px-5 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all h-[38px] flex items-center justify-center"
+                        >
+                          Clear
+                        </button>
                       </div>
                     </div>
-                  </motion.div>
+
+                    <div className="space-y-3">
+                      {isLoadingDonations ? (
+                        <div className="text-center py-10 text-slate-500 text-sm">Loading history...</div>
+                      ) : !donationData?.donations?.length ? (
+                        <div className="text-center py-10 text-slate-500 text-sm">No donations found in this range.</div>
+                      ) : (
+                        donationData.donations.map((donation) => (
+                          <div key={donation._id} className="flex items-center justify-between p-5 bg-white/[0.02] border border-white/[0.05] rounded-2xl hover:bg-white/[0.04] transition-all">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 shrink-0">
+                                <Droplet size={18} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-white mb-0.5">Donated Blood</p>
+                                <p className="text-xs text-slate-500">{fmt(donation.donatedAt)}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-1">Next Eligible</p>
+                              <p className="text-xs font-semibold text-emerald-400">{fmt(donation.nextEligibleDate)}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 )}
               </motion.div>
             </AnimatePresence>

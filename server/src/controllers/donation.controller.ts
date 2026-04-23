@@ -22,6 +22,13 @@ export class DonationController {
     res.status(StatusCode.OK).json({ success: true, donations });
   });
 
+  getUserDonations = asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+    const donations = await this.donationService.getUserDonations(userId, startDate, endDate);
+    res.status(StatusCode.OK).json({ success: true, donations });
+  });
+
   getRecentDonations = asyncHandler(async (req: Request, res: Response) => {
     const donations = await this.donationService.getRecentDonations();
     res.status(StatusCode.OK).json({ success: true, donations });
