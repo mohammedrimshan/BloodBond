@@ -16,6 +16,8 @@ import DonorsPage from "@/components/Landing/DonorsPage";
 import ProfilePage from "@/components/Profile/ProfilePage";
 import EditProfilePage from "@/components/Profile/EditProfilePage";
 import Navbar from "@/components/Navbar/Navbar";
+import { SocketProvider } from "@/contexts/SocketContext";
+import { EmergencyAlertModal } from "@/components/EmergencyAlertModal";
 
 import ProtectedRoute from "@/Protect/ProtectedRoute";
 import AuthProtectedRoute from "@/Protect/AuthProtectedRoute";
@@ -23,6 +25,7 @@ import AuthProtectedRoute from "@/Protect/AuthProtectedRoute";
 import AdminLogin from "@/admin/pages/AdminLogin";
 import Dashboard from "@/admin/pages/Dashboard";
 import Users from "@/admin/pages/Users";
+import Emergency from "@/admin/pages/Emergency";
 import AdminLayout from "@/admin/components/AdminLayout";
 import AdminProtectedRoute from "@/Protect/AdminProtectedRoute";
 import AdminAuthProtectedRoute from "@/Protect/AdminAuthProtectedRoute";
@@ -68,6 +71,7 @@ const AppContent = () => {
   return (
     <TooltipProvider>
       <Toaster richColors />
+      <EmergencyAlertModal />
       <Routes>
         <Route element={<LoadingWrapper />}>
           {/* Pages with Navbar */}
@@ -97,6 +101,7 @@ const AppContent = () => {
               <Route element={<AdminLayout />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="users" element={<Users />} />
+                <Route path="emergency" element={<Emergency />} />
               </Route>
             </Route>
           </Route>
@@ -114,7 +119,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="bloodbond-theme">
         <BrowserRouter>
-          <AppContent />
+          <SocketProvider>
+            <AppContent />
+          </SocketProvider>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>

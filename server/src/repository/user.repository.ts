@@ -15,6 +15,10 @@ export class UserRepository
     return this.model.findOne({ email }).exec();
   }
 
+  async findByRole(role: string): Promise<UserDocument[]> {
+    return this.model.find({ role }).exec();
+  }
+
   async findAllEligible(): Promise<UserDocument[]> {
     return this.model.find({}).exec();
   }

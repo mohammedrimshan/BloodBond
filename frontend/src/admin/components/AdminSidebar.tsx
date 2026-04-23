@@ -10,7 +10,8 @@ import {
   LogOut, 
   Droplets,
   ChevronRight,
-  X
+  X,
+  AlertCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -40,6 +41,7 @@ const AdminSidebar = ({ isOpen, setIsOpen, isMobile }: AdminSidebarProps) => {
   const menuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Users", path: "/admin/users", icon: Users },
+    { name: "Emergency Requests", path: "/admin/emergency", icon: AlertCircle },
   ];
 
   return (

@@ -3,6 +3,7 @@ import { IBaseRepository } from "./base-repository.interface";
 
 export interface IUserRepository extends IBaseRepository<UserDocument> {
   findByEmail(email: string): Promise<UserDocument | null>;
+  findByRole(role: string): Promise<UserDocument[]>;
   findAllEligible(): Promise<UserDocument[]>;
   updateUser(id: string, data: Partial<IUser>): Promise<UserDocument | null>;
   findNearbyDonors(lat: number, lng: number, radiusInKm: number): Promise<UserDocument[]>;

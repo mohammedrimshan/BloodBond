@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
@@ -25,10 +26,16 @@ import { DonationRepository } from "./repository/donation.repository";
 import { DonationService } from "./services/donation.service";
 import { DonationController } from "./controllers/donation.controller";
 import { initRemindersCron } from "./utils/reminders.cron";
+import { SocketService } from "./services/socket.service";
+import { EmergencyRepository } from "./repository/emergency.repository";
+import { EmergencyService } from "./services/emergency.service";
+import { EmergencyController } from "./controllers/emergency.controller";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const socketService = new SocketService(server);
 
 // Middlewares
 app.use(
@@ -55,6 +62,7 @@ const userRepository = new UserRepository();
 const otpRepository = new OtpRepository();
 const adminRepository = new AdminRepository();
 const donationRepository = new DonationRepository();
+const emergencyRepository = new EmergencyRepository();
 
 // Instantiate external services
 const cloudinaryService = new CloudinaryService();
@@ -65,12 +73,14 @@ const authService = new AuthService(userRepository, otpRepository, otpService);
 const userService = new UserService(userRepository, cloudinaryService);
 const adminService = new AdminService(adminRepository);
 const donationService = new DonationService(donationRepository, adminRepository);
+const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository);
 
 // Instantiate controllers
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
 const adminController = new AdminController(adminService);
 const donationController = new DonationController(donationService);
+const emergencyController = new EmergencyController(emergencyService);
 
 // Inject donation methods into admin controller for simplified routing (or keep separate)
 // Given the existing structure, I'll add the methods to AdminController directly or use the donationController in routes.
@@ -78,8 +88,8 @@ const donationController = new DonationController(donationService);
 
 // Routes
 app.use("/api/auth", authRoutes(authController));
-app.use("/api/users", userRoutes(userController));
-app.use("/api/admin", adminRoutes(adminController, donationController));
+app.use("/api/users", userRoutes(userController, emergencyController));
+app.use("/api/admin", adminRoutes(adminController, donationController, emergencyController));
 app.use("/api/donations", donationRoutes(donationController));
 
 // Health check
@@ -94,7 +104,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
   initRemindersCron();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 });
