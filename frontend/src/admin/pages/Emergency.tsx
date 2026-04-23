@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useGetEmergencies, useCreateEmergency, useUpdateEmergency } from "../hooks/useEmergency";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle, Activity, Plus, X, Droplet, UserCheck } from "lucide-react";
+import { Clock, CheckCircle, Activity, Plus, X, Droplet, UserCheck, Search, Filter } from "lucide-react";
 import { z } from "zod";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const emergencySchema = z.object({
   patientName: z.string().min(2, "Patient name must be at least 2 characters").max(50, "Patient name is too long"),
-  hospitalName: z.string().min(2, "Hospital name must be at least 2 characters").max(100, "Hospital name is too long"),
+  hospitalName: z.string().min(2, "Hospital name must be at least 2 characters").max(200, "Hospital name is too long"),
   bloodGroup: z.string().min(1, "Blood group is required"),
 });
 
@@ -64,6 +64,18 @@ const Emergency = () => {
   const [hospitalSuggestions, setHospitalSuggestions] = useState<any[]>([]);
   const [isSearchingHospitals, setIsSearchingHospitals] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Search & Filter State
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterBloodGroup, setFilterBloodGroup] = useState("All");
+
+  // Debounce Search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     if (selectedRequest) {
@@ -176,12 +188,54 @@ const Emergency = () => {
         
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-red-900/40 active:scale-[0.98]"
+          className="flex items-center gap-2 px-6 py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl shadow-red-900/40 active:scale-[0.98] shrink-0"
         >
           <Plus size={18} />
           <span>New Emergency</span>
         </button>
       </header>
+
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 px-2">
+        <div className="flex-1 relative">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input 
+            type="text" 
+            placeholder="Search patient or hospital..." 
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold text-white placeholder-slate-500 focus:outline-none focus:border-red-500/50 shadow-lg shadow-black/10 transition-all" 
+          />
+        </div>
+        
+        <div className="flex gap-4">
+          <div className="relative group">
+            <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-focus-within:text-red-500 transition-colors" />
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="appearance-none bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl pl-11 pr-10 py-3.5 text-sm font-bold text-slate-300 focus:outline-none focus:border-red-500/50 shadow-lg shadow-black/10 transition-all cursor-pointer min-w-[160px]"
+            >
+              <option className="bg-slate-900 text-white" value="All">All Statuses</option>
+              <option className="bg-slate-900 text-white" value="Pending">Pending</option>
+              <option className="bg-slate-900 text-white" value="In Progress">In Progress</option>
+              <option className="bg-slate-900 text-white" value="Completed">Completed</option>
+            </select>
+          </div>
+
+          <div className="relative group">
+            <Droplet size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-focus-within:text-red-500 transition-colors" />
+            <select 
+              value={filterBloodGroup} 
+              onChange={(e) => setFilterBloodGroup(e.target.value)}
+              className="appearance-none bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl pl-11 pr-10 py-3.5 text-sm font-bold text-slate-300 focus:outline-none focus:border-red-500/50 shadow-lg shadow-black/10 transition-all cursor-pointer min-w-[180px]"
+            >
+              <option className="bg-slate-900 text-white" value="All">All Blood Groups</option>
+              {BLOOD_GROUPS.map(bg => <option className="bg-slate-900 text-white" key={bg} value={bg}>{bg}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Table Container */}
       <motion.div 
@@ -203,19 +257,35 @@ const Emergency = () => {
               <AnimatePresence mode="wait">
                 {isLoading ? (
                   <tr className="flex flex-col md:table-row"><td colSpan={4} className="px-6 py-20 text-center text-slate-500">Loading emergencies...</td></tr>
-                ) : !data?.requests?.length ? (
-                  <tr className="flex flex-col md:table-row">
-                    <td colSpan={4} className="px-6 py-20 text-center">
-                      <div className="flex flex-col items-center gap-4 text-slate-600">
-                         <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800">
-                           <Activity size={32} className="opacity-20 text-red-500" />
-                         </div>
-                         <p className="text-sm font-bold tracking-widest uppercase">No emergency requests found</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  data.requests.map((req: any) => (
+                ) : (() => {
+                  const filteredRequests = data?.requests?.filter((req: any) => {
+                    const matchStatus = filterStatus === "All" || req.status === filterStatus;
+                    const matchBlood = filterBloodGroup === "All" || req.bloodGroup === filterBloodGroup;
+                    const searchLower = debouncedSearch.toLowerCase();
+                    const matchSearch = debouncedSearch === "" || 
+                      req.patientName.toLowerCase().includes(searchLower) || 
+                      req.hospitalName.toLowerCase().includes(searchLower);
+                    return matchStatus && matchBlood && matchSearch;
+                  }) || [];
+
+                  if (!filteredRequests.length) {
+                    return (
+                      <tr className="flex flex-col md:table-row">
+                        <td colSpan={4} className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center gap-4 text-slate-600">
+                             <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800">
+                               {data?.requests?.length ? <Search size={32} className="opacity-20 text-slate-500" /> : <Activity size={32} className="opacity-20 text-red-500" />}
+                             </div>
+                             <p className="text-sm font-bold tracking-widest uppercase">
+                               {data?.requests?.length ? "No matching requests found" : "No emergency requests found"}
+                             </p>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredRequests.map((req: any) => (
                     <motion.tr 
                       key={req._id} 
                       initial={{ opacity: 0 }}
@@ -264,7 +334,7 @@ const Emergency = () => {
                       </td>
                     </motion.tr>
                   ))
-                )}
+                })()}
               </AnimatePresence>
             </tbody>
           </table>
