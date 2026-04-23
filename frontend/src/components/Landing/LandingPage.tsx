@@ -7,11 +7,13 @@ import InteractiveDroplet from "./InteractiveDroplet";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import BloodRequestForm from "./BloodRequestForm";
+import { useTranslation } from "react-i18next";
 
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const LandingPage = () => {
+  const { t } = useTranslation();
   const { hash } = useLocation();
   const { data: donorsResponse, isLoading } = useGetDonors();
   const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
@@ -40,35 +42,35 @@ const LandingPage = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
-                Save Lives Today
+                {t("landing.saveLives")}
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1]">
-                Your Blood. <br className="hidden md:block"/>
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
+                {t("landing.heroTitle")}. <br className="hidden md:block"/>
                 <span className="text-primary relative inline-block">
-                  Their Future.
+                  {t("landing.heroSubtitle")}
                   <svg className="absolute -bottom-2 w-full h-3 text-primary/20" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 15 100 5" stroke="currentColor" strokeWidth="4" fill="transparent"/></svg>
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-slate-600 font-medium max-w-lg leading-relaxed">
-                A single drop of blood holds the power to restart a heartbeat. Join our community of lifesavers and make a difference that lasts forever.
+              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-lg leading-relaxed">
+                {t("landing.heroDescription")}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
                 <Link to="/signup" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-xl bg-primary hover:bg-burgundy-light text-white shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all">
-                    Become a Donor
+                    {t("landing.registerAsDonor")}
                   </Button>
                 </Link>
                 <Button 
                   onClick={() => setIsRequestFormOpen(true)}
                   variant="outline" 
                   size="lg" 
-                  className="w-full sm:w-auto h-14 px-8 text-lg rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 transition-all gap-2"
+                  className="w-full sm:w-auto h-14 px-8 text-lg rounded-xl border-border text-foreground hover:bg-muted transition-all gap-2"
                 >
                   <PlusCircle size={20} className="text-red-600" />
-                  Request Blood
+                  {t("landing.requestBlood")}
                 </Button>
               </div>
             </div>

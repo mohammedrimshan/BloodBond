@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
 import adminReducer from './adminSlice';
+import themeReducer from './themeSlice';
 import {
   persistStore,
   persistReducer,
@@ -23,13 +24,20 @@ const adminPersistConfig = {
   storage,
 };
 
+const themePersistConfig = {
+  key: 'theme',
+  storage,
+};
+
 const persistedUserReducer = persistReducer(persistConfig, userReducer);
 const persistedAdminReducer = persistReducer(adminPersistConfig, adminReducer);
+const persistedThemeReducer = persistReducer(themePersistConfig, themeReducer);
 
 export const store = configureStore({
   reducer: {
     user: persistedUserReducer,
     admin: persistedAdminReducer,
+    theme: persistedThemeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

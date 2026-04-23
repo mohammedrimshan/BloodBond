@@ -3,26 +3,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  /* Core */
+:root {
   --color-background: hsl(0 20% 97%);
   --color-foreground: hsl(0 30% 12%);
   --color-border: hsl(0 15% 88%);
-
-  /* Brand — Crimson blood-red */
-  --color-primary: hsl(0 70% 40%);
-  --color-primary-foreground: hsl(0 0% 100%);
-
-  /* Muted text */
   --color-muted: hsl(0 15% 95%);
   --color-muted-foreground: hsl(0 15% 42%);
-
-  /* Custom UI colors */
   --color-peach: hsl(0 40% 93%);
   --color-peach-dark: hsl(0 35% 88%);
-
+  --color-primary: hsl(0 70% 40%);
+  --color-primary-foreground: hsl(0 0% 100%);
   --color-burgundy: hsl(0 70% 40%);
   --color-burgundy-light: hsl(0 65% 50%);
+}
+
+.dark {
+  --color-background: hsl(222 47% 6%);
+  --color-foreground: hsl(0 0% 95%);
+  --color-border: hsl(220 20% 18%);
+  --color-muted: hsl(220 20% 12%);
+  --color-muted-foreground: hsl(0 0% 60%);
+  --color-peach: hsl(0 30% 15%);
+  --color-peach-dark: hsl(0 25% 20%);
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-border: var(--color-border);
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-peach: var(--color-peach);
+  --color-peach-dark: var(--color-peach-dark);
+  --color-burgundy: var(--color-burgundy);
+  --color-burgundy-light: var(--color-burgundy-light);
 }
 
 @layer base {
@@ -30,7 +46,9 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Droplets, Menu, X, User, LogOut, Bell } from "lucide-react";
 import { useUnreadCount } from "@/hooks/useNotifications";
@@ -9,6 +9,9 @@ import { clearUser } from "@/store/userSlice";
 import { logoutUser } from "@/Service/authService";
 import { PROFILE_TOASTS } from "@/constants/toastMessages";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { Sun, Moon, Languages } from "lucide-react";
+import { useTheme } from "@/components/Theme/ThemeProvider";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,6 +21,9 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { data: unreadCount } = useUnreadCount();
+
+  const { t, i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -30,10 +36,15 @@ const Navbar = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    const nextLang = i18n.language === "en" ? "ml" : "en";
+    i18n.changeLanguage(nextLang);
+  };
+
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Donors", href: "/donors" },
-    { label: "Stories", href: "/stories" },
+    { label: t("nav.home"), href: "/" },
+    { label: t("nav.donors"), href: "/donors" },
+    { label: t("nav.stories"), href: "/stories" },
   ];
 
   return (
@@ -52,7 +63,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 to={link.href}
                 className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
               >
@@ -61,8 +72,25 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Auth/Profile */}
+          {/* Desktop Controls (Theme, Language) + Auth */}
           <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-1 border-r border-border/50 pr-4 mr-2">
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+                title={theme === "dark" ? "Switch to Light" : "Switch to Dark"}
+              >
+                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-1.5 p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+                title="Switch Language"
+              >
+                <Languages size={20} />
+                <span className="text-xs font-black uppercase">{i18n.language === 'en' ? 'മല' : 'EN'}</span>
+              </button>
+            </div>
             {isLoggedIn ? (
               <>
                 <Link
@@ -110,14 +138,14 @@ const Navbar = () => {
                         className="flex items-center gap-2 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors"
                       >
                         <User size={16} />
-                        My Profile
+                        {t("nav.profile")}
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-2 w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
                       >
                         <LogOut size={16} />
-                        Logout
+                        {t("nav.logout")}
                       </button>
                     </div>
                   </>
@@ -128,12 +156,12 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Link to="/login">
                   <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
-                    Login
+                    {t("nav.login")}
                   </Button>
                 </Link>
                 <Link to="/signup">
                   <Button size="sm" className="bg-primary hover:bg-burgundy-light text-primary-foreground">
-                    Sign Up
+                    {t("nav.signup")}
                   </Button>
                 </Link>
               </div>
@@ -141,12 +169,27 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex items-center gap-1 md:hidden">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button
+              onClick={toggleLanguage}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
+            >
+              <Languages size={20} />
+              <span className="text-[10px] font-black uppercase">{i18n.language === 'en' ? 'മല' : 'EN'}</span>
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -175,7 +218,7 @@ const Navbar = () => {
                   >
                     <div className="flex items-center gap-2">
                       <Bell size={16} />
-                      Notifications
+                      {t("nav.notifications")}
                     </div>
                     {unreadCount !== undefined && unreadCount > 0 && (
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
@@ -189,26 +232,26 @@ const Navbar = () => {
                     className="flex items-center gap-2 py-2 text-sm font-medium text-foreground"
                   >
                     <User size={16} />
-                    My Profile
+                    {t("nav.profile")}
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 py-2 text-sm font-medium text-red-600"
                   >
                     <LogOut size={16} />
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full border-primary text-primary">
-                      Login
+                      {t("nav.login")}
                     </Button>
                   </Link>
                   <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
                     <Button className="w-full bg-primary hover:bg-burgundy-light text-primary-foreground">
-                      Sign Up
+                      {t("nav.signup")}
                     </Button>
                   </Link>
                 </div>

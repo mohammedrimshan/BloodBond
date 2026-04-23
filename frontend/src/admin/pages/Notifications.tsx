@@ -15,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 import type { INotification } from "@/Service/notificationService";
 import {
   getAdminNotifications,
-  getAdminUnreadCount,
   markAdminAsRead,
   markAdminAllAsRead,
 } from "@/admin/api/adminNotificationService";

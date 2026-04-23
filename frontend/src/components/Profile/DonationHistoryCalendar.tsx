@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Droplets } from 'lucide-react';
 import type { IDonation } from '@/types/DonationTypes';
 

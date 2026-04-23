@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 import { CLOUDINARY_ASSETS } from "@/constants/cloudinary";
 
@@ -12,6 +13,7 @@ const frameUrls: string[] = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
 });
 
 const InteractiveDroplet = () => {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const imagesRef = useRef<HTMLImageElement[]>([]);
@@ -137,7 +139,7 @@ const InteractiveDroplet = () => {
 
   return (
     <motion.div 
-      className="relative w-full aspect-square max-w-[500px] overflow-hidden rounded-3xl bg-[#FFFFFF] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 cursor-pointer"
+      className="relative w-full aspect-square max-w-[500px] overflow-hidden rounded-3xl bg-background shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-border cursor-pointer"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, y: 20 }}
@@ -147,7 +149,7 @@ const InteractiveDroplet = () => {
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 mix-blend-multiply dark:mix-blend-screen"
         style={{ opacity: imagesLoaded ? 1 : 0 }}
       />
       
@@ -158,16 +160,16 @@ const InteractiveDroplet = () => {
             isHovered ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
           }`}
         >
-          <span className="bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-medium tracking-widest text-slate-400 uppercase shadow-sm">
-            Hover to explore
+          <span className="bg-background/80 dark:bg-muted/80 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-medium tracking-widest text-muted-foreground uppercase shadow-sm border border-border">
+            {t("landing.hoverToExplore")}
           </span>
         </div>
       )}
 
       {/* Loading state */}
       {!imagesLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-          <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       )}
     </motion.div>

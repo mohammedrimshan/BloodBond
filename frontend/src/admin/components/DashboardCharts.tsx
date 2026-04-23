@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, Legend
+  Cell, LineChart, Line
 } from 'recharts';
 
 interface Props {
@@ -52,7 +52,7 @@ const DashboardCharts: React.FC<Props> = ({ bloodGroups, userGrowth }) => {
                 itemStyle={{ color: '#fff' }}
               />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {formattedBloodGroups.map((entry, index) => (
+                {formattedBloodGroups.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Bar>

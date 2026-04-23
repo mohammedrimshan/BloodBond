@@ -58,7 +58,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         toast.error("🚨 EMERGENCY BLOOD REQUIREMENT", {
           description: payload.message,
           duration: 10000,
-          important: true,
         });
       });
 

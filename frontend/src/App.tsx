@@ -20,6 +20,7 @@ import { SocketProvider } from "@/contexts/SocketContext";
 import { EmergencyAlertModal } from "@/components/EmergencyAlertModal";
 import NotificationPage from "@/pages/NotificationPage";
 import SuccessStoriesPage from "@/pages/SuccessStoriesPage";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 import ProtectedRoute from "@/Protect/ProtectedRoute";
 import AuthProtectedRoute from "@/Protect/AuthProtectedRoute";
@@ -75,6 +76,7 @@ const AppContent = () => {
     <TooltipProvider>
       <Toaster richColors />
       <EmergencyAlertModal />
+      <PWAInstallPrompt />
       <Routes>
         <Route element={<LoadingWrapper />}>
           {/* Pages with Navbar */}

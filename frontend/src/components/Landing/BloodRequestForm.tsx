@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Droplet, Send, Hospital, User, AlertCircle } from "lucide-react";
 import { privateAxiosInstance } from "@/api/privateAxios.Instance";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { emergencySchema, type EmergencyFormData } from "@/validations/emergency.schema";
 
@@ -12,6 +13,7 @@ interface BloodRequestFormProps {
 }
 
 const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<EmergencyFormData>({
     patientName: "",
     hospitalName: "",
@@ -116,7 +118,7 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
     setIsSubmitting(true);
     try {
       await privateAxiosInstance.post("/users/emergency/request", formData);
-      toast.success("Request submitted! An admin will verify and alert donors soon.");
+      toast.success(t("bloodRequest.success"));
       
       // Reset form state
       setFormData({
@@ -150,17 +152,17 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg bg-background rounded-t-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-border"
           >
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center border border-red-100">
-                  <Droplet className="text-red-600 w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-50 dark:bg-red-950/30 rounded-xl sm:rounded-2xl flex items-center justify-center border border-red-100 dark:border-red-900/30">
+                  <Droplet className="text-red-600 w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Request Blood</h2>
-                  <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Urgent Requirement</p>
+                  <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight">{t("bloodRequest.title")}</h2>
+                  <p className="text-muted-foreground text-[9px] sm:text-xs font-bold uppercase tracking-widest">{t("bloodRequest.subtitle")}</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
@@ -171,18 +173,18 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-2 block">Patient Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-4 mb-2 block">{t("bloodRequest.patientName")}</label>
                   <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                     <input
                       required
                       type="text"
                       name="patientName"
-                      placeholder="Enter patient's full name"
+                      placeholder={t("bloodRequest.patientNamePlaceholder")}
                       value={formData.patientName}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
-                      className={`w-full h-14 pl-12 pr-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-red-500/20 transition-all ${errors.patientName && touched.patientName ? 'ring-2 ring-red-500/20' : ''}`}
+                      className={`w-full h-12 sm:h-14 pl-11 sm:pl-12 pr-4 bg-muted border-none rounded-xl sm:rounded-2xl text-sm sm:text-base text-foreground font-bold placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-red-500/20 transition-all ${errors.patientName && touched.patientName ? 'ring-2 ring-red-500/20' : ''}`}
                     />
                   </div>
                   {errors.patientName && touched.patientName && (
@@ -191,14 +193,14 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                 </div>
 
                 <div className="relative">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-2 block">Hospital & Location</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-4 mb-2 block">{t("bloodRequest.hospital")}</label>
                   <div className="relative">
-                    <Hospital className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Hospital className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                     <input
                       required
                       type="text"
                       name="hospitalName"
-                      placeholder="Hospital name and address"
+                      placeholder={t("bloodRequest.hospitalPlaceholder")}
                       value={formData.hospitalName}
                       onChange={(e) => {
                         handleInputChange(e);
@@ -206,7 +208,7 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                       }}
                       onFocus={() => setShowSuggestions(true)}
                       onBlur={handleBlur}
-                      className={`w-full h-14 pl-12 pr-4 bg-slate-50 border-none rounded-2xl text-slate-900 font-bold placeholder:text-slate-300 focus:ring-2 focus:ring-red-500/20 transition-all ${errors.hospitalName && touched.hospitalName ? 'ring-2 ring-red-500/20' : ''}`}
+                      className={`w-full h-12 sm:h-14 pl-11 sm:pl-12 pr-4 bg-muted border-none rounded-xl sm:rounded-2xl text-sm sm:text-base text-foreground font-bold placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-red-500/20 transition-all ${errors.hospitalName && touched.hospitalName ? 'ring-2 ring-red-500/20' : ''}`}
                     />
                   </div>
                   {errors.hospitalName && touched.hospitalName && (
@@ -219,10 +221,10 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
-                        className="absolute z-[110] w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden"
+                        className="absolute z-[110] w-full mt-2 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden"
                       >
                         {isSearchingHospitals ? (
-                          <div className="p-4 text-xs font-bold text-slate-400 text-center animate-pulse">Searching maps...</div>
+                          <div className="p-4 text-xs font-bold text-muted-foreground text-center animate-pulse">{t("bloodRequest.searchingMaps")}</div>
                         ) : hospitalSuggestions.length > 0 ? (
                           <ul className="max-h-48 overflow-y-auto">
                             {hospitalSuggestions.map((hospital, idx) => {
@@ -240,17 +242,17 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                                     setShowSuggestions(false);
                                     validateField("hospitalName", newName);
                                   }}
-                                  className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 transition-colors"
+                                  className="px-4 py-3 hover:bg-muted cursor-pointer border-b border-border last:border-0 transition-colors"
                                 >
-                                  <p className="text-sm font-bold text-slate-900 truncate">{mainName}</p>
-                                  <p className="text-[10px] text-slate-400 truncate mt-0.5">{address}</p>
+                                  <p className="text-sm font-bold text-foreground truncate">{mainName}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{address}</p>
                                 </li>
                               )
                             })}
                           </ul>
                         ) : (
-                          <div className="p-4 text-xs font-bold text-slate-400 text-center">
-                            No match found. Proceed with "{formData.hospitalName}".
+                          <div className="p-4 text-xs font-bold text-muted-foreground text-center">
+                            {t("bloodRequest.noMatch")}. Proceed with "{formData.hospitalName}".
                           </div>
                         )}
                       </motion.div>
@@ -259,8 +261,8 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4 mb-3 block">Required Blood Group</label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-4 mb-2 sm:mb-3 block">{t("bloodRequest.bloodGroup")}</label>
+                  <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                     {BLOOD_GROUPS.map((group) => (
                       <button
                         key={group}
@@ -269,10 +271,10 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                           setFormData({ ...formData, bloodGroup: group });
                           validateField("bloodGroup", group);
                         }}
-                        className={`py-3 rounded-xl text-sm font-black border transition-all ${
+                        className={`py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-black border transition-all ${
                           formData.bloodGroup === group
                             ? "bg-red-600 text-white border-red-700 shadow-lg shadow-red-600/20"
-                            : "bg-white text-slate-500 border-slate-100 hover:border-red-200"
+                            : "bg-muted text-muted-foreground border-border hover:border-red-200"
                         } ${errors.bloodGroup && touched.bloodGroup ? 'border-red-500' : ''}`}
                       >
                         {group}
@@ -285,10 +287,10 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                 </div>
               </div>
 
-              <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100 flex gap-3">
-                <AlertCircle className="text-amber-500 shrink-0" size={20} />
-                <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
-                  Your request will be sent to our admins for verification. Once approved, all eligible donors in the area will be notified immediately.
+              <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-amber-100 dark:border-amber-900/20 flex gap-2.5 sm:gap-3">
+                <AlertCircle className="text-amber-500 shrink-0" size={18} />
+                <p className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-relaxed">
+                  {t("bloodRequest.warning")}
                 </p>
               </div>
 
@@ -302,7 +304,7 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ isOpen, onClose }) 
                 ) : (
                   <>
                     <Send size={20} />
-                    Submit Request
+                    {t("bloodRequest.submit")}
                   </>
                 )}
               </button>

@@ -5,12 +5,14 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
 import { Button } from "@/components/ui/button";
 import type { IDonorResponse } from "@/types/DonorTypes";
+import { useTranslation } from "react-i18next";
 
 interface HeroCarouselProps {
   donors: IDonorResponse[];
 }
 
 const HeroCarousel = ({ donors }: HeroCarouselProps) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -61,10 +63,10 @@ const HeroCarousel = ({ donors }: HeroCarouselProps) => {
               <HeartHandshake size={40} className="text-primary" />
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Be the First to <span className="text-primary">Donate</span>
+              {t("landing.beTheFirst").split("Donate")[0]} <span className="text-primary">Donate</span>
             </h2>
             <p className="mt-2 mb-8 text-base sm:text-lg text-muted-foreground font-medium max-w-xl">
-              Currently, there are no recorded donations in our community. Join our mission and spark a chain of life-saving events.
+              {t("landing.noDonationsDesc")}
             </p>
             {!isLoggedIn && (
               <Button 
@@ -72,7 +74,7 @@ const HeroCarousel = ({ donors }: HeroCarouselProps) => {
                 className="bg-primary hover:bg-burgundy-light text-primary-foreground font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all h-auto text-lg"
               >
                 <HeartHandshake size={20} className="mr-2" />
-                Become a Donor
+                {t("landing.registerAsDonor")}
               </Button>
             )}
           </div>
@@ -96,10 +98,10 @@ const HeroCarousel = ({ donors }: HeroCarouselProps) => {
         {/* Section title */}
         <div className="text-center mb-8 sm:mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-            🩸 Donor <span className="text-primary">Spotlight</span>
+            🩸 {t("landing.donorSpotlight").split("Spotlight")[0]} <span className="text-primary">Spotlight</span>
           </h2>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-            Celebrating our amazing donors who save lives every day
+            {t("landing.donorSpotlightDesc")}
           </p>
         </div>
 
@@ -142,20 +144,9 @@ const HeroCarousel = ({ donors }: HeroCarouselProps) => {
                 {donor.bloodGroup}
               </span>
               <span className="text-sm text-muted-foreground">
-                {donor.place || "Unknown Location"}
+                {donor.place || t("landing.unknownLocation")}
               </span>
             </div>
-            {/* 
-            <p className="mt-3 text-base sm:text-lg text-foreground font-medium max-w-md">
-              {donor.congratsMessage}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              <span className="font-semibold text-primary">
-                {donor.donationCount}
-              </span>{" "}
-              donations completed
-            </p> 
-            */}
           </div>
 
           {/* Next button */}

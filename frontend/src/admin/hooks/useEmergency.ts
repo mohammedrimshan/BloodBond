@@ -76,7 +76,7 @@ export const useVerifyEmergency = () => {
       const response = await adminAxios.patch(`/emergency/${id}/verify`, { status });
       return response.data;
     },
-    onSuccess: (data: any, variables: any) => {
+    onSuccess: (_data: any, variables: any) => {
       toast.success(`Request ${variables.status === "Pending" ? "Approved" : "Rejected"} successfully.`);
       queryClient.invalidateQueries({ queryKey: ["admin", "emergencies"] });
     },
