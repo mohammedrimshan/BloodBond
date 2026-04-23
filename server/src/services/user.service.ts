@@ -9,7 +9,7 @@ export class UserService implements IUserService {
     private cloudinaryService: ICloudinaryService
   ) {}
 
-  async getEligibleDonors(): Promise<UserDocument[]> {
+  async getEligibleDonors(): Promise<any[]> {
     return this.userRepository.findAllEligible();
   }
 
@@ -39,7 +39,11 @@ export class UserService implements IUserService {
     return this.userRepository.updateUser(id, updateData);
   }
 
-  async getNearbyDonors(lat: number, lng: number, radius: number): Promise<UserDocument[]> {
+  async getNearbyDonors(lat: number, lng: number, radius: number): Promise<any[]> {
     return this.userRepository.findNearbyDonors(lat, lng, radius);
+  }
+
+  async getPublicProfile(id: string): Promise<any> {
+    return this.userRepository.getPublicProfile(id);
   }
 }

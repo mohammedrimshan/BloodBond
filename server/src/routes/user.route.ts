@@ -11,6 +11,7 @@ export default function userRoutes(userController: IUserController, emergencyCon
   router.get("/nearby", userController.getNearbyDonors.bind(userController));
   router.get("/profile", verifyAuth, userController.getProfile.bind(userController));
   router.put("/profile", verifyAuth, userController.updateProfile.bind(userController));
+  router.get("/:id/public", userController.getPublicProfile.bind(userController));
 
   router.post("/emergency/:id/ready", verifyAuth, emergencyController.markReady.bind(emergencyController));
 

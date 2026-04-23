@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDonors, getNearbyDonors } from "@/Service/userService";
-import type { IDonorsApiResponse } from "@/types/DonorTypes";
+import { getDonors, getNearbyDonors, getPublicProfile } from "@/Service/userService";
+import type { IDonorsApiResponse, IPublicUserApiResponse } from "@/types/DonorTypes";
 
 export const useGetDonors = () => {
   return useQuery<IDonorsApiResponse, Error>({
@@ -18,5 +18,14 @@ export const useGetNearbyDonors = (lat: number | null, lng: number | null, radiu
     enabled: lat !== null && lng !== null,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
+  });
+};
+
+export const usePublicProfile = (id: string | null) => {
+  return useQuery<IPublicUserApiResponse, Error>({
+    queryKey: ["public-profile", id],
+    queryFn: () => getPublicProfile(id!),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 };

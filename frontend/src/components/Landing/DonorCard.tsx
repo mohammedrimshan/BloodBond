@@ -3,9 +3,10 @@ import type { IDonorResponse } from "@/types/DonorTypes";
 
 interface DonorCardProps {
   donor: IDonorResponse;
+  onClick?: () => void;
 }
 
-const DonorCard = ({ donor }: DonorCardProps) => {
+const DonorCard = ({ donor, onClick }: DonorCardProps) => {
   const formattedDate = donor.lastDonatedDate 
     ? new Date(donor.lastDonatedDate).toLocaleDateString("en-IN", {
         year: "numeric",
@@ -15,7 +16,10 @@ const DonorCard = ({ donor }: DonorCardProps) => {
     : "No recent donation";
 
   return (
-    <div className={`group relative rounded-2xl border border-border bg-background p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${donor.isEligible === false ? 'opacity-75 grayscale-[0.2]' : ''}`}>
+    <div 
+      onClick={onClick}
+      className={`group relative rounded-2xl border border-border bg-background p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${donor.isEligible === false ? 'opacity-75 grayscale-[0.2]' : ''}`}
+    >
       {/* Availability Status */}
       {donor.isEligible === false && (
         <div className="absolute top-4 left-4 z-10">
@@ -54,7 +58,7 @@ const DonorCard = ({ donor }: DonorCardProps) => {
       <div className="flex items-center justify-between pt-3 border-t border-border/60">
         <div className="flex items-center gap-1.5 text-sm">
           <Droplet size={14} className="text-primary fill-primary/30" />
-          <span className="text-foreground font-medium">-</span>
+          <span className="text-foreground font-medium">{donor.totalDonations ?? 0}</span>
           <span className="text-muted-foreground">donations</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

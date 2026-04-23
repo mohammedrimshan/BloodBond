@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DonorCard from "./DonorCard";
 import DonorsMap from "./DonorsMap";
+import PublicUserModal from "@/components/Modal/PublicUserModal";
 import type { IDonorResponse } from "../../types/DonorTypes";
 import type { RootState } from "@/store/store";
 import { DONOR_TOASTS } from "@/constants/toastMessages";
@@ -26,6 +27,7 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isNearbyMode, setIsNearbyMode] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const isLoggedIn = useSelector((state: RootState) => state.user.isLoggedIn);
   const navigate = useNavigate();
@@ -141,12 +143,12 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
             <div className="w-16 h-16 border-4 border-t-red-600 rounded-full animate-spin" />
           </div>
         ) : viewMode === "map" ? (
-          <DonorsMap donors={filteredDonors} center={userLocation ? [userLocation.lat, userLocation.lng] : undefined} zoom={userLocation ? 13 : undefined} />
+          <DonorsMap donors={filteredDonors} center={userLocation ? [userLocation.lat, userLocation.lng] : undefined} zoom={userLocation ? 13 : undefined} onViewProfile={(id) => setSelectedUserId(id)} />
         ) : filteredDonors.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDonors.map((donor, idx) => (
               <div key={donor.id || (donor as any)._id || idx} className="relative group">
-                <DonorCard donor={donor} />
+                <DonorCard donor={donor} onClick={() => setSelectedUserId(donor.id || (donor as any)._id)} />
                 {isNearbyMode && <div className="absolute -top-3 -right-3 z-20 bg-green-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg border-2 border-white">NEARBY</div>}
               </div>
             ))}
@@ -157,6 +159,13 @@ const DonorSection = ({ donors, isLoading }: DonorSectionProps) => {
           </div>
         )}
       </div>
+
+      {selectedUserId && (
+        <PublicUserModal 
+          userId={selectedUserId} 
+          onClose={() => setSelectedUserId(null)} 
+        />
+      )}
     </section>
   );
 };

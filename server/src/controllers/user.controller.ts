@@ -55,4 +55,19 @@ export class UserController implements IUserController {
       data: donors,
     });
   });
+
+  getPublicProfile = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.id;
+    const profile = await this.userService.getPublicProfile(userId);
+    
+    if (!profile) {
+      res.status(StatusCode.NOT_FOUND).json({ success: false, message: "User not found" });
+      return;
+    }
+
+    res.status(StatusCode.OK).json({
+      success: true,
+      data: profile,
+    });
+  });
 }

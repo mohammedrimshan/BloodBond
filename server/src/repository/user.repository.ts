@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { BaseRepository } from "./base.respository";
 import { UserModel } from "../models/user.model";
 import { UserDocument, IUser } from "../types/user";
@@ -19,24 +20,63 @@ export class UserRepository
     return this.model.find({ role }).exec();
   }
 
-  async findAllEligible(): Promise<UserDocument[]> {
-    return this.model.find({}).exec();
+  async findAllEligible(): Promise<any[]> {
+    return this.model.aggregate([
+      {
+        $lookup: {
+          from: "donations",
+          localField: "_id",
+          foreignField: "userId",
+          as: "donations",
+        },
+      },
+      {
+        $addFields: {
+          totalDonations: { $size: "$donations" },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          donations: 0,
+        },
+      },
+    ]);
   }
 
-  async findNearbyDonors(lat: number, lng: number, radiusInKm: number): Promise<UserDocument[]> {
-    const radiusInRadians = radiusInKm / 6378.1; // Convert km to radians for MongoDB
-    const donors = await this.model.find({
-      isEligible: true,
-      location: {
-        $geoWithin: {
-          $centerSphere: [[lng, lat], radiusInRadians]
+  async findNearbyDonors(lat: number, lng: number, radiusInKm: number): Promise<any[]> {
+    const radiusInRadians = radiusInKm / 6378.1;
+    return this.model.aggregate([
+      {
+        $match: {
+          isEligible: true,
+          location: {
+            $geoWithin: {
+              $centerSphere: [[lng, lat], radiusInRadians]
+            }
+          }
         }
-      }
-    }).exec();
-    
-    console.log(`📍 Nearby Search Found ${donors.length} donors.`);
-    donors.forEach(d => console.log(`   - ID: ${d._id}, Name: ${d.name}, Role: ${d.role}, Blocked: ${d.isBlocked}`));
-    return donors;
+      },
+      {
+        $lookup: {
+          from: "donations",
+          localField: "_id",
+          foreignField: "userId",
+          as: "donations",
+        },
+      },
+      {
+        $addFields: {
+          totalDonations: { $size: "$donations" },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          donations: 0,
+        },
+      },
+    ]);
   }
 
   async updateUser(
@@ -67,5 +107,33 @@ export class UserRepository
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } }
     ]);
+  }
+
+  async getPublicProfile(id: string): Promise<any> {
+    const user = await this.model.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      {
+        $lookup: {
+          from: "donations",
+          localField: "_id",
+          foreignField: "userId",
+          as: "donations",
+        },
+      },
+      {
+        $addFields: {
+          totalDonations: { $size: "$donations" },
+        },
+      },
+      {
+        $project: {
+          password: 0,
+          role: 0,
+          donations: 0,
+        },
+      },
+    ]);
+
+    return user.length ? user[0] : null;
   }
 }

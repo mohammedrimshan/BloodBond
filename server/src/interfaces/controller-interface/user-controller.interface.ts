@@ -5,4 +5,5 @@ export interface IUserController {
   getNearbyDonors: RequestHandler;
   getProfile: RequestHandler;
   updateProfile: RequestHandler;
+  getPublicProfile: RequestHandler;
 }

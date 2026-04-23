@@ -36,11 +36,48 @@ export class DonationRepository {
   }
 
   async findRecent(limit: number): Promise<any[]> {
-    return (await DonationModel.find()
-      .populate("userId", "name bloodGroup photoUrl")
-      .sort({ donatedAt: -1 })
-      .limit(limit)
-      .lean()) as any[];
+    return DonationModel.aggregate([
+      { $sort: { donatedAt: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $lookup: {
+          from: "donations",
+          localField: "userId",
+          foreignField: "userId",
+          as: "allDonations",
+        },
+      },
+      {
+        $addFields: {
+          "user.totalDonations": { $size: "$allDonations" },
+        },
+      },
+      {
+        $project: {
+          allDonations: 0,
+          "user.password": 0,
+        },
+      },
+      {
+        $addFields: {
+          userId: "$user",
+        }
+      },
+      {
+        $project: {
+          user: 0
+        }
+      }
+    ]);
   }
 
   async findAll(page: number, limit: number): Promise<{ donations: DonationDocument[]; total: number }> {

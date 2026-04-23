@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useDonations } from "@/hooks/useDonations";
+import PublicUserModal from "@/components/Modal/PublicUserModal";
 import { Droplet, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -16,6 +18,7 @@ const formatRelativeTime = (dateString: string) => {
 const RecentDonorsCarousel = () => {
   const { useRecentDonations } = useDonations();
   const { data, isLoading } = useRecentDonations();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const recentDonations = data?.donations || [];
 
   if (isLoading) {
@@ -64,7 +67,8 @@ const RecentDonorsCarousel = () => {
             <motion.div
               key={donation._id}
               whileHover={{ y: -5 }}
-              className="min-w-[280px] sm:min-w-[320px] bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-red-900/5 transition-all group relative overflow-hidden"
+              onClick={() => setSelectedUserId(donation.userId._id)}
+              className="min-w-[280px] sm:min-w-[320px] bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-red-900/5 transition-all group relative overflow-hidden cursor-pointer"
             >
               {/* Decorative background */}
               <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-red-50 rounded-full blur-3xl group-hover:bg-red-100 transition-colors" />
@@ -112,6 +116,13 @@ const RecentDonorsCarousel = () => {
           ))}
         </motion.div>
       </div>
+
+      {selectedUserId && (
+        <PublicUserModal 
+          userId={selectedUserId} 
+          onClose={() => setSelectedUserId(null)} 
+        />
+      )}
     </section>
   );
 };

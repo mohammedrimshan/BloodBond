@@ -1,6 +1,6 @@
 import { publicAxiosInstance } from "@/api/publicAxios.Instance";
 import { privateAxiosInstance } from "@/api/privateAxios.Instance";
-import type { IDonorsApiResponse } from "../types/DonorTypes";
+import type { IDonorsApiResponse, IPublicUserApiResponse } from "../types/DonorTypes";
 
 export const getDonors = async (): Promise<IDonorsApiResponse> => {
   const response = await publicAxiosInstance.get<IDonorsApiResponse>("/users/donors");
@@ -19,5 +19,10 @@ export const updateProfile = async (data: any): Promise<any> => {
 
 export const getNearbyDonors = async (lat: number, lng: number, radius: number = 10): Promise<IDonorsApiResponse> => {
   const response = await publicAxiosInstance.get<IDonorsApiResponse>(`/users/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+  return response.data;
+};
+
+export const getPublicProfile = async (id: string): Promise<IPublicUserApiResponse> => {
+  const response = await publicAxiosInstance.get<IPublicUserApiResponse>(`/users/${id}/public`);
   return response.data;
 };

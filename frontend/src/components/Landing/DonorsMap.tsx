@@ -44,6 +44,7 @@ interface Props {
   donors: IDonorResponse[];
   center?: [number, number];
   zoom?: number;
+  onViewProfile?: (userId: string) => void;
 }
 
 // Component to handle map center updates
@@ -55,7 +56,7 @@ const RecenterMap = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-const DonorsMap: React.FC<Props> = ({ donors, center = [10.8505, 76.2711], zoom = 7 }) => {
+const DonorsMap: React.FC<Props> = ({ donors, center = [10.8505, 76.2711], zoom = 7, onViewProfile }) => {
   // Filter donors who have valid location data
   const donorsWithLocation = donors.filter(d => 
     d.location?.coordinates && 
@@ -111,7 +112,10 @@ const DonorsMap: React.FC<Props> = ({ donors, center = [10.8505, 76.2711], zoom 
                     </div>
                   </div>
 
-                  <button className="w-full mt-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm">
+                  <button 
+                    onClick={() => onViewProfile?.(donor.id || (donor as any)._id)}
+                    className="w-full mt-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-colors shadow-sm"
+                  >
                     View Profile
                   </button>
                 </div>
