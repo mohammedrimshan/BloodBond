@@ -37,6 +37,7 @@ import { StoryService } from "./services/story.service";
 import { StoryController } from "./controllers/story.controller";
 import storyRoutes from "./routes/story.route";
 import notificationRoutes from "./routes/notification.route";
+import { TelegramService } from "./services/telegram.service";
 
 dotenv.config();
 
@@ -82,7 +83,8 @@ const notificationService = new NotificationService(notificationRepository, sock
 const userService = new UserService(userRepository, cloudinaryService);
 const adminService = new AdminService(adminRepository);
 const donationService = new DonationService(donationRepository, adminRepository, notificationService);
-const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository, notificationService);
+const telegramService = new TelegramService();
+const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository, notificationService, telegramService);
 const storyService = new StoryService(socketService);
 
 // Instantiate controllers

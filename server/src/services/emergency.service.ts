@@ -8,6 +8,7 @@ import { StatusCode } from "../constants/statusCode";
 import { ERROR_MESSAGES } from "../constants/messages";
 
 import { NotificationService } from "./notification.service";
+import { TelegramService } from "./telegram.service";
 
 export class EmergencyService {
   constructor(
@@ -15,7 +16,8 @@ export class EmergencyService {
     private socketService: SocketService,
     private donationService: DonationService,
     private userRepository: UserRepository,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private telegramService: TelegramService
   ) {}
 
   async createEmergency(data: { patientName: string; hospitalName: string; bloodGroup: string }) {
@@ -126,6 +128,17 @@ export class EmergencyService {
       "emergency_verification",
       `/admin/emergency?id=${request._id}`
     );
+
+    // Send Telegram alert to admin
+    const requester = await this.userRepository.findById(userId);
+    await this.telegramService.sendBloodRequestAlert({
+      patientName: data.patientName,
+      bloodGroup: data.bloodGroup,
+      hospitalName: data.hospitalName,
+      requesterName: requester?.name,
+      requesterPhone: requester?.phoneNumber,
+      requestId: request._id.toString(),
+    });
 
     return request;
   }
