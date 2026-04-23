@@ -18,7 +18,7 @@ const DonorCard = ({ donor, onClick }: DonorCardProps) => {
   return (
     <div 
       onClick={onClick}
-      className={`group relative rounded-2xl border border-border bg-background p-5 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${donor.isEligible === false ? 'opacity-75 grayscale-[0.2]' : ''}`}
+      className={`group relative rounded-2xl border border-border bg-background p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${onClick ? 'cursor-pointer' : ''} ${donor.isEligible === false ? 'opacity-75 grayscale-[0.2]' : ''}`}
     >
       {/* Availability Status */}
       {donor.isEligible === false && (
@@ -37,32 +37,32 @@ const DonorCard = ({ donor, onClick }: DonorCardProps) => {
       </div>
 
       {/* Avatar + Name */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-4 mb-6 mt-4">
         <img
           src={donor.photoUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${donor.name}`}
           alt={donor.name}
-          className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20 shrink-0"
+          className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/20 shrink-0 shadow-sm"
         />
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-foreground truncate">
+          <h3 className="text-lg font-bold text-foreground truncate leading-tight">
             {donor.name}
           </h3>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin size={12} />
+          <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+            <MapPin size={13} />
             <span className="truncate">{donor.place || "Unknown Location"}</span>
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="flex items-center justify-between pt-3 border-t border-border/60">
+      <div className="flex items-center justify-between pt-4 border-t border-border/60">
         <div className="flex items-center gap-1.5 text-sm">
-          <Droplet size={14} className="text-primary fill-primary/30" />
-          <span className="text-foreground font-medium">{donor.totalDonations ?? 0}</span>
+          <Droplet size={15} className="text-primary fill-primary/30" />
+          <span className="text-foreground font-bold">{donor.totalDonations ?? 0}</span>
           <span className="text-muted-foreground">donations</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Calendar size={12} />
+          <Calendar size={13} />
           <span>{formattedDate}</span>
         </div>
       </div>
