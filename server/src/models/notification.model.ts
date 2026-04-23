@@ -4,8 +4,9 @@ export interface INotification {
   userId: Types.ObjectId;
   title: string;
   message: string;
-  type: "eligibility" | "donation_completed" | "emergency_completed" | "general";
+  type: "eligibility" | "donation_completed" | "emergency_completed" | "emergency_verification" | "general";
   isRead: boolean;
+  link?: string;
   createdAt: Date;
 }
 

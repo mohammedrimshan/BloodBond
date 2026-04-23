@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useGetEmergencies } from "../hooks/useEmergency";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle, Activity, Plus, Search, Filter, Droplet, Ban } from "lucide-react";
+import { Clock, CheckCircle, Activity, Plus, Search, Filter, Droplet, Ban, Bell } from "lucide-react";
 import EmergencyDrawer from "../components/EmergencyDrawer";
 import EmergencyModal from "../components/EmergencyModal";
+import { useSocket } from "@/contexts/SocketContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -23,6 +26,29 @@ const Emergency = () => {
     const timer = setTimeout(() => setDebouncedSearch(searchInput), 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  const { socket } = useSocket();
+  const queryClient = useQueryClient();
+
+  // Socket Listener for real-time updates
+  useEffect(() => {
+    if (socket) {
+      const handleNewRequest = (request: any) => {
+        console.log("[Socket] New Emergency Request received:", request);
+        toast.info("New Blood Request Received!", {
+          description: `${request.patientName} needs ${request.bloodGroup} at ${request.hospitalName}`,
+          icon: <Bell className="text-red-500" />,
+          duration: 8000,
+        });
+        queryClient.invalidateQueries({ queryKey: ["emergencies"] });
+      };
+
+      socket.on("new_emergency_verification", handleNewRequest);
+      return () => {
+        socket.off("new_emergency_verification", handleNewRequest);
+      };
+    }
+  }, [socket, queryClient]);
 
   // Update selectedRequest if data changes
   useEffect(() => {

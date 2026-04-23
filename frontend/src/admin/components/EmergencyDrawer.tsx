@@ -91,6 +91,21 @@ const EmergencyDrawer = ({ selectedRequest, setSelectedRequest }: EmergencyDrawe
                 {selectedRequest.bloodGroup}
               </span>
             </div>
+
+            {selectedRequest.requestedBy && (
+              <div className="pt-4 mt-4 border-t border-slate-800/60 space-y-3">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Requested By</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-[10px] font-bold text-white uppercase">
+                    {selectedRequest.requestedBy.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{selectedRequest.requestedBy.name}</p>
+                    <p className="text-[11px] text-slate-400 font-medium">{selectedRequest.requestedBy.phoneNumber}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Ready Donors List */}

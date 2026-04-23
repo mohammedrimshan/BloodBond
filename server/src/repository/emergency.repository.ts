@@ -8,13 +8,17 @@ export class EmergencyRepository {
   }
 
   async findById(id: string): Promise<IEmergency | null> {
-    return await EmergencyModel.findById(id).populate("readyUsers", "name email bloodGroup photoUrl district phoneNumber").populate("completedByUser", "name email");
+    return await EmergencyModel.findById(id)
+      .populate("readyUsers", "name email bloodGroup photoUrl district phoneNumber")
+      .populate("completedByUser", "name email")
+      .populate("requestedBy", "name phoneNumber email");
   }
 
   async findAll(): Promise<IEmergency[]> {
     return await EmergencyModel.find()
       .populate("readyUsers", "name email bloodGroup photoUrl district phoneNumber")
       .populate("completedByUser", "name email")
+      .populate("requestedBy", "name phoneNumber email")
       .sort({ createdAt: -1 });
   }
 
