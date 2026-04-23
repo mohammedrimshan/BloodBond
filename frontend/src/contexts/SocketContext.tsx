@@ -16,17 +16,21 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const { user, isLoggedIn } = useSelector((state: any) => state.user);
+  const { admin, isAuthenticated: isAdminAuthenticated } = useSelector((state: any) => state.admin);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log("[SocketContext] Auth State:", { isLoggedIn, user });
-    const userId = user?.id || user?._id;
+    const isUserActive = isLoggedIn && (user?.id || user?._id);
+    const isAdminActive = isAdminAuthenticated && (admin?.id || admin?._id);
+    
+    console.log("[SocketContext] Auth State:", { isUserActive, isAdminActive });
+    const currentUserId = isUserActive ? (user?.id || user?._id) : (admin?.id || admin?._id);
 
-    if (isLoggedIn && userId) {
+    if (isUserActive || isAdminActive) {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
       const socketUrl = baseUrl.replace("/api", "");
       
-      console.log("[Socket] Connecting to:", socketUrl, "with user ID:", userId);
+      console.log("[Socket] Connecting to:", socketUrl, "with user ID:", currentUserId);
       
       const newSocket = io(socketUrl, {
         withCredentials: true,
@@ -60,13 +64,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       newSocket.on("connect_error", (err) => {
         console.error("[Socket] Connection Error:", err.message);
-        // If auth error, maybe it's an expired token that will be refreshed soon
-        if (err.message.includes("Authentication error")) {
-          console.warn("[Socket] Auth error, will retry in 5s...");
-          setTimeout(() => {
-            if (newSocket.disconnected) newSocket.connect();
-          }, 5000);
-        }
       });
 
       setSocket(newSocket);
@@ -78,7 +75,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       socket.disconnect();
       setSocket(null);
     }
-  }, [isLoggedIn, user?.id, user?._id, queryClient]);
+  }, [isLoggedIn, isAdminAuthenticated, user?.id, user?._id, admin?.id, admin?._id, queryClient]);
 
   return <SocketContext.Provider value={{ socket }}>{children}</SocketContext.Provider>;
 };

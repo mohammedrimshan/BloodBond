@@ -11,7 +11,8 @@ import {
   Droplets,
   ChevronRight,
   X,
-  AlertCircle
+  AlertCircle,
+  Bell
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -42,6 +43,7 @@ const AdminSidebar = ({ isOpen, setIsOpen, isMobile }: AdminSidebarProps) => {
     { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Users", path: "/admin/users", icon: Users },
     { name: "Emergency Requests", path: "/admin/emergency", icon: AlertCircle },
+    { name: "Notifications", path: "/admin/notifications", icon: Bell },
   ];
 
   return (

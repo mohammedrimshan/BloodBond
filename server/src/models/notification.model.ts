@@ -19,9 +19,10 @@ const notificationSchema = new Schema<NotificationDocument>(
     message: { type: String, required: true },
     type: {
       type: String,
-      enum: ["eligibility", "donation_completed", "emergency_completed", "general"],
+      enum: ["eligibility", "donation_completed", "emergency_completed", "emergency_verification", "general"],
       default: "general",
     },
+    link: { type: String },
     isRead: { type: Boolean, default: false },
   },
   { timestamps: true }

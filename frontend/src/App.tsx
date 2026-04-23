@@ -31,6 +31,7 @@ import Emergency from "@/admin/pages/Emergency";
 import AdminLayout from "@/admin/components/AdminLayout";
 import AdminProtectedRoute from "@/Protect/AdminProtectedRoute";
 import AdminAuthProtectedRoute from "@/Protect/AdminAuthProtectedRoute";
+import AdminNotifications from "@/admin/pages/Notifications";
 
 /* ---------------- React Query Client ---------------- */
 const queryClient = new QueryClient({
@@ -106,6 +107,7 @@ const AppContent = () => {
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="users" element={<Users />} />
                 <Route path="emergency" element={<Emergency />} />
+                <Route path="notifications" element={<AdminNotifications />} />
               </Route>
             </Route>
           </Route>

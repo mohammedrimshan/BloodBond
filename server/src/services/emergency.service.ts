@@ -7,12 +7,15 @@ import { AppError } from "../utils/appError";
 import { StatusCode } from "../constants/statusCode";
 import { ERROR_MESSAGES } from "../constants/messages";
 
+import { NotificationService } from "./notification.service";
+
 export class EmergencyService {
   constructor(
     private emergencyRepository: EmergencyRepository,
     private socketService: SocketService,
     private donationService: DonationService,
-    private userRepository: UserRepository
+    private userRepository: UserRepository,
+    private notificationService: NotificationService
   ) {}
 
   async createEmergency(data: { patientName: string; hospitalName: string; bloodGroup: string }) {
@@ -115,6 +118,14 @@ export class EmergencyService {
 
     // Notify Admins about new pending verification
     this.socketService.sendToUser("admin", "new_emergency_verification", request);
+    
+    // Create persistent notification for admins
+    await this.notificationService.notifyAdmins(
+      "New Blood Request 🚨",
+      `${data.patientName} needs ${data.bloodGroup} at ${data.hospitalName}. Action required.`,
+      "emergency_verification",
+      `/admin/emergency?id=${request._id}`
+    );
 
     return request;
   }

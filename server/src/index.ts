@@ -78,11 +78,11 @@ const cloudinaryService = new CloudinaryService();
 // Instantiate internal services
 const otpService = new OtpService(otpRepository);
 const authService = new AuthService(userRepository, otpRepository, otpService);
-const notificationService = new NotificationService(notificationRepository, socketService);
+const notificationService = new NotificationService(notificationRepository, socketService, userRepository);
 const userService = new UserService(userRepository, cloudinaryService);
 const adminService = new AdminService(adminRepository);
 const donationService = new DonationService(donationRepository, adminRepository, notificationService);
-const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository);
+const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository, notificationService);
 const storyService = new StoryService(socketService);
 
 // Instantiate controllers
@@ -101,7 +101,7 @@ const storyController = new StoryController(storyService);
 // Routes
 app.use("/api/auth", authRoutes(authController));
 app.use("/api/users", userRoutes(userController, emergencyController));
-app.use("/api/admin", adminRoutes(adminController, donationController, emergencyController));
+app.use("/api/admin", adminRoutes(adminController, donationController, emergencyController, notificationController));
 app.use("/api/donations", donationRoutes(donationController));
 app.use("/api/notifications", notificationRoutes(notificationController));
 app.use("/api/stories", storyRoutes(storyController));

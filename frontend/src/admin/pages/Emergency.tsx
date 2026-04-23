@@ -8,12 +8,29 @@ import { useSocket } from "@/contexts/SocketContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useSearchParams } from "react-router-dom";
+
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const Emergency = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading } = useGetEmergencies();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+  // Handle direct navigation via URL ID
+  useEffect(() => {
+    const requestId = searchParams.get("id");
+    if (requestId && data?.requests && !selectedRequest) {
+      const request = data.requests.find((r: any) => r._id === requestId);
+      if (request) {
+        setSelectedRequest(request);
+        // Clear the param after opening to allow closing the drawer
+        searchParams.delete("id");
+        setSearchParams(searchParams);
+      }
+    }
+  }, [searchParams, data, selectedRequest, setSearchParams]);
 
   // Search & Filter State
   const [searchInput, setSearchInput] = useState("");

@@ -123,6 +123,7 @@ export class AuthService implements IAuthService {
     const payload: CustomJwtPayload = {
       id: user._id.toString(),
       email: user.email,
+      role: user.role,
     };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
@@ -179,6 +180,7 @@ export class AuthService implements IAuthService {
     const payload: CustomJwtPayload = {
       id: user._id.toString(),
       email: user.email,
+      role: user.role,
     };
     const accessToken = createAccessToken(payload);
     const refreshToken = createRefreshToken(payload);
@@ -223,6 +225,7 @@ export class AuthService implements IAuthService {
       const payload: CustomJwtPayload = {
         id: user._id.toString(),
         email: user.email,
+        role: user.role,
       };
       const newAccessToken = createAccessToken(payload);
       const newRefreshToken = createRefreshToken(payload);
