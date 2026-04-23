@@ -30,4 +30,18 @@ export class EmergencyController {
     const request = await this.emergencyService.markUserReady(id, userId);
     res.status(StatusCode.OK).json({ success: true, message: "You have been marked as ready for this emergency.", request });
   });
+
+  requestEmergencyByUser = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).user.id;
+    const { patientName, hospitalName, bloodGroup } = req.body;
+    const request = await this.emergencyService.requestEmergencyByUser(userId, { patientName, hospitalName, bloodGroup });
+    res.status(StatusCode.CREATED).json({ success: true, message: "Emergency request submitted for verification", request });
+  });
+
+  verifyEmergency = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body; // PENDING or REJECTED
+    const request = await this.emergencyService.verifyEmergency(id, status);
+    res.status(StatusCode.OK).json({ success: true, message: `Emergency request ${status.toLowerCase()}`, request });
+  });
 }

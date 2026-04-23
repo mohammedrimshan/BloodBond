@@ -65,10 +65,26 @@ export class SocketService {
         console.log(`[Socket] User ${socket.userId} joined room ${socket.userId}`);
       }
 
+      if (socket.role) {
+        socket.join(socket.role);
+        console.log(`[Socket] User joined role room: ${socket.role}`);
+      }
+
       socket.on("disconnect", (reason) => {
         console.log(`🔌 Socket disconnected: ${socket.id} (User: ${socket.userId}, Reason: ${reason})`);
       });
     });
+  }
+
+  public broadcast(event: string, payload: any) {
+    console.log(`[Socket] Broadcasting ${event} to ALL users`);
+    this.io.emit(event, payload);
+  }
+
+  public sendToUser(userId: string, event: string, payload: any) {
+    const roomId = userId.toString();
+    console.log(`[Socket] Sending ${event} to user room: ${roomId}`);
+    this.io.to(roomId).emit(event, payload);
   }
 
   public notifyEligibleUsers(userIds: string[], payload: any) {

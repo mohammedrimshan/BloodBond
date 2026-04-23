@@ -82,7 +82,21 @@ export class EmergencyService {
 
     if (status === EmergencyStatus.COMPLETED && userToMarkDonated) {
       // Create a donation record for the user and update their eligibility
-      await this.donationService.markAsDonated(userToMarkDonated);
+      // Find the next eligible date (today + 3 months) for the message
+      const nextDate = new Date();
+      nextDate.setMonth(nextDate.getMonth() + 3);
+      const formattedDate = nextDate.toLocaleDateString("en-IN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      await this.donationService.markAsDonated(
+        userToMarkDonated,
+        "Emergency Donation Completed! 🌟",
+        `Congratulations! You can donate again after ${formattedDate}. Thank you for responding to the emergency.`,
+        requestId
+      );
     }
 
     return updatedRequest;
@@ -90,5 +104,47 @@ export class EmergencyService {
 
   async getAllEmergencies() {
     return await this.emergencyRepository.findAll();
+  }
+
+  async requestEmergencyByUser(userId: string, data: { patientName: string; hospitalName: string; bloodGroup: string }) {
+    const request = await this.emergencyRepository.createRequest({
+      ...data,
+      status: EmergencyStatus.PENDING_VERIFICATION,
+      requestedBy: userId as any,
+    });
+
+    // Notify Admins about new pending verification
+    this.socketService.sendToUser("admin", "new_emergency_verification", request);
+
+    return request;
+  }
+
+  async verifyEmergency(requestId: string, status: EmergencyStatus.PENDING | EmergencyStatus.REJECTED) {
+    const request = await this.emergencyRepository.findById(requestId);
+    if (!request) {
+      throw new AppError("Request not found", StatusCode.NOT_FOUND);
+    }
+
+    if (request.status !== EmergencyStatus.PENDING_VERIFICATION) {
+      throw new AppError("This request has already been processed", StatusCode.BAD_REQUEST);
+    }
+
+    const updatedRequest = await this.emergencyRepository.updateStatusAndComplete(requestId, status);
+
+    if (status === EmergencyStatus.PENDING) {
+      // Logic from createEmergency to notify eligible donors
+      const users = await this.userRepository.findByRole("user");
+      const eligibleUsers = users.filter((user: any) => user.bloodGroup === updatedRequest!.bloodGroup && user.isEligible);
+      const userIds = eligibleUsers.map((user: any) => (user._id as string).toString());
+
+      this.socketService.notifyEligibleUsers(userIds, {
+        id: updatedRequest!._id,
+        hospitalName: updatedRequest!.hospitalName,
+        bloodGroup: updatedRequest!.bloodGroup,
+        message: `Urgent requirement for ${updatedRequest!.bloodGroup} blood at ${updatedRequest!.hospitalName}.`,
+      });
+    }
+
+    return updatedRequest;
   }
 }

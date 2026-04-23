@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { Droplets, Menu, X, User, LogOut } from "lucide-react";
+import { Droplets, Menu, X, User, LogOut, Bell } from "lucide-react";
+import { useUnreadCount } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import type { RootState } from "@/store/store";
 import { clearUser } from "@/store/userSlice";
@@ -16,13 +17,14 @@ const Navbar = () => {
   const user = useSelector((state: RootState) => state.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { data: unreadCount } = useUnreadCount();
 
   const handleLogout = async () => {
     try {
       await logoutUser();
       dispatch(clearUser());
       toast.success(PROFILE_TOASTS.LOGOUT_SUCCESS);
-      navigate("/login");
+      navigate("/");
     } catch {
       toast.error(PROFILE_TOASTS.LOGOUT_FAILED);
     }
@@ -31,6 +33,7 @@ const Navbar = () => {
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Donors", href: "/donors" },
+    { label: "Stories", href: "/stories" },
   ];
 
   return (
@@ -59,9 +62,21 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Auth/Profile */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             {isLoggedIn ? (
-              <div className="relative">
+              <>
+                <Link
+                  to="/notifications"
+                  className="relative p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+                >
+                  <Bell size={22} />
+                  {unreadCount !== undefined && unreadCount > 0 && (
+                    <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+                <div className="relative">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                   className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
@@ -108,7 +123,8 @@ const Navbar = () => {
                   </>
                 )}
               </div>
-            ) : (
+            </>
+          ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login">
                   <Button variant="outline" size="sm" className="border-primary text-primary hover:bg-primary/10">
@@ -151,7 +167,22 @@ const Navbar = () => {
 
             <div className="pt-3 border-t border-border">
               {isLoggedIn ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <Link
+                    to="/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between py-2 text-sm font-medium text-foreground"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bell size={16} />
+                      Notifications
+                    </div>
+                    {unreadCount !== undefined && unreadCount > 0 && (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
                   <Link
                     to="/profile"
                     onClick={() => setMobileMenuOpen(false)}

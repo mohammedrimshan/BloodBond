@@ -30,6 +30,13 @@ import { SocketService } from "./services/socket.service";
 import { EmergencyRepository } from "./repository/emergency.repository";
 import { EmergencyService } from "./services/emergency.service";
 import { EmergencyController } from "./controllers/emergency.controller";
+import { NotificationRepository } from "./repository/notification.repository";
+import { NotificationService } from "./services/notification.service";
+import { NotificationController } from "./controllers/notification.controller";
+import { StoryService } from "./services/story.service";
+import { StoryController } from "./controllers/story.controller";
+import storyRoutes from "./routes/story.route";
+import notificationRoutes from "./routes/notification.route";
 
 dotenv.config();
 
@@ -63,6 +70,7 @@ const otpRepository = new OtpRepository();
 const adminRepository = new AdminRepository();
 const donationRepository = new DonationRepository();
 const emergencyRepository = new EmergencyRepository();
+const notificationRepository = new NotificationRepository();
 
 // Instantiate external services
 const cloudinaryService = new CloudinaryService();
@@ -70,10 +78,12 @@ const cloudinaryService = new CloudinaryService();
 // Instantiate internal services
 const otpService = new OtpService(otpRepository);
 const authService = new AuthService(userRepository, otpRepository, otpService);
+const notificationService = new NotificationService(notificationRepository, socketService);
 const userService = new UserService(userRepository, cloudinaryService);
 const adminService = new AdminService(adminRepository);
-const donationService = new DonationService(donationRepository, adminRepository);
+const donationService = new DonationService(donationRepository, adminRepository, notificationService);
 const emergencyService = new EmergencyService(emergencyRepository, socketService, donationService, userRepository);
+const storyService = new StoryService(socketService);
 
 // Instantiate controllers
 const authController = new AuthController(authService);
@@ -81,6 +91,8 @@ const userController = new UserController(userService);
 const adminController = new AdminController(adminService);
 const donationController = new DonationController(donationService);
 const emergencyController = new EmergencyController(emergencyService);
+const notificationController = new NotificationController(notificationService);
+const storyController = new StoryController(storyService);
 
 // Inject donation methods into admin controller for simplified routing (or keep separate)
 // Given the existing structure, I'll add the methods to AdminController directly or use the donationController in routes.
@@ -91,6 +103,8 @@ app.use("/api/auth", authRoutes(authController));
 app.use("/api/users", userRoutes(userController, emergencyController));
 app.use("/api/admin", adminRoutes(adminController, donationController, emergencyController));
 app.use("/api/donations", donationRoutes(donationController));
+app.use("/api/notifications", notificationRoutes(notificationController));
+app.use("/api/stories", storyRoutes(storyController));
 
 // Health check
 app.get("/", (req: Request, res: Response) => {
@@ -103,7 +117,7 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
-  initRemindersCron();
+  initRemindersCron(notificationService);
   server.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });

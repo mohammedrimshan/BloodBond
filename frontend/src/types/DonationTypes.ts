@@ -5,6 +5,7 @@ export interface IDonation {
   userId: string | Partial<User>;
   donatedAt: string;
   nextEligibleDate: string;
+  isEmergency?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

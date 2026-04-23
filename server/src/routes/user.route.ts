@@ -14,6 +14,7 @@ export default function userRoutes(userController: IUserController, emergencyCon
   router.get("/:id/public", userController.getPublicProfile.bind(userController));
 
   router.post("/emergency/:id/ready", verifyAuth, emergencyController.markReady.bind(emergencyController));
+  router.post("/emergency/request", verifyAuth, emergencyController.requestEmergencyByUser.bind(emergencyController));
 
   return router;
 }

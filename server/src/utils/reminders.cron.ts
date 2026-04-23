@@ -3,11 +3,13 @@ import { UserModel } from "../models/user.model";
 import { DonationModel } from "../models/donation.model";
 import { sendReminderEmail } from "../services/email.service";
 
+import { NotificationService } from "../services/notification.service";
+
 /**
  * Daily CRON job to check for donation eligibility
  * Runs every day at 00:00 (Midnight)
  */
-export const initRemindersCron = () => {
+export const initRemindersCron = (notificationService: NotificationService) => {
   cron.schedule("0 0 * * *", async () => {
     console.log("⏰ Running Daily Eligibility Check CRON Job...");
     
@@ -30,6 +32,15 @@ export const initRemindersCron = () => {
           if (user.isEligible === false) {
             await UserModel.findByIdAndUpdate(user._id, { isEligible: true });
             await sendReminderEmail(user.email, user.name);
+            
+            // Send socket notification
+            await notificationService.sendNotification(
+              user._id.toString(),
+              "You are eligible to donate again! 🩸",
+              `Hi ${user.name}, it's been 3 months since your last donation. You can now save another life!`,
+              "eligibility"
+            );
+
             console.log(`✅ Eligibility updated and reminder sent to: ${user.email}`);
             processedUserIds.add(user._id.toString());
           }

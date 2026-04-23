@@ -6,9 +6,10 @@ interface Props {
   bloodGroup: string;
   date: string;
   certificateId: string;
+  isEmergency?: boolean;
 }
 
-const CertificateTemplate = React.forwardRef<HTMLDivElement, Props>(({ donorName, bloodGroup, date, certificateId }, ref) => {
+const CertificateTemplate = React.forwardRef<HTMLDivElement, Props>(({ donorName, bloodGroup, date, certificateId, isEmergency }, ref) => {
   const formattedDate = date ? new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'November 22, 2050';
 
   // Standard CSS reset for the certificate to avoid Tailwind variables inheritance
@@ -49,7 +50,23 @@ const CertificateTemplate = React.forwardRef<HTMLDivElement, Props>(({ donorName
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 80px', textAlign: 'center', boxSizing: 'border-box' }}>
         {/* Header */}
         <h1 style={{ fontSize: '48px', fontWeight: 900, letterSpacing: '-0.025em', color: '#5c1a1a', margin: '0 0 4px 0', textTransform: 'uppercase' }}>BLOOD DONATION</h1>
-        <h2 style={{ fontSize: '48px', fontWeight: 300, letterSpacing: '0.2em', color: '#5c1a1a', margin: '0 0 48px 0', textTransform: 'uppercase' }}>CERTIFICATE</h2>
+        <h2 style={{ fontSize: '48px', fontWeight: 300, letterSpacing: '0.2em', color: '#5c1a1a', margin: '0 0 24px 0', textTransform: 'uppercase' }}>CERTIFICATE</h2>
+
+        {isEmergency && (
+          <div style={{ 
+            backgroundColor: '#8B0000', 
+            color: '#ffffff', 
+            padding: '4px 16px', 
+            borderRadius: '4px', 
+            fontSize: '12px', 
+            fontWeight: 900, 
+            letterSpacing: '0.2em', 
+            marginBottom: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+          }}>
+            SPECIAL COMMENDATION: EMERGENCY RESPONSE
+          </div>
+        )}
 
         <p style={{ fontSize: '18px', fontStyle: 'italic', color: '#475569', marginBottom: '32px' }}>This certificate is awarded to</p>
 

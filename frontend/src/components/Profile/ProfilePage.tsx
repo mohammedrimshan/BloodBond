@@ -193,8 +193,15 @@ const ProfilePage = () => {
 
               {/* Name & meta */}
               <div className="text-center sm:text-left">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
                   {user.name || "User Name"}
+                  {(() => {
+                    const count = donationsData?.donations?.length || 0;
+                    if (count >= 10) return <span className="bg-amber-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm shadow-amber-500/30 uppercase tracking-tighter">Legend</span>;
+                    if (count >= 5) return <span className="bg-indigo-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm shadow-indigo-500/30 uppercase tracking-tighter">Guardian</span>;
+                    if (count >= 1) return <span className="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm shadow-emerald-500/30 uppercase tracking-tighter">Life Saver</span>;
+                    return null;
+                  })()}
                 </h1>
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mt-1.5 text-sm text-gray-400 font-medium">
                   <div className="flex items-center gap-1.5">

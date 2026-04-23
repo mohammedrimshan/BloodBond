@@ -15,6 +15,14 @@ const DonorCard = ({ donor, onClick }: DonorCardProps) => {
       })
     : "No recent donation";
 
+  const getBadge = (count: number) => {
+    if (count >= 10) return { label: "Legend", color: "bg-amber-500 text-white shadow-amber-500/50" };
+    if (count >= 5) return { label: "Guardian", color: "bg-indigo-500 text-white shadow-indigo-500/50" };
+    if (count >= 1) return { label: "Life Saver", color: "bg-emerald-500 text-white shadow-emerald-500/50" };
+    return null;
+  };
+  const badge = getBadge(donor.totalDonations ?? 0);
+
   return (
     <div 
       onClick={onClick}
@@ -29,9 +37,14 @@ const DonorCard = ({ donor, onClick }: DonorCardProps) => {
         </div>
       )}
 
-      {/* Blood group badge */}
-      <div className="absolute top-4 right-4">
-        <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20">
+      {/* Top right badges */}
+      <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
+        {badge && (
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-md ${badge.color}`}>
+            {badge.label}
+          </span>
+        )}
+        <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary border border-primary/20 backdrop-blur-sm">
           {donor.bloodGroup}
         </span>
       </div>

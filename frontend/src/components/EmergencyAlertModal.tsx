@@ -19,20 +19,27 @@ export const EmergencyAlertModal: React.FC = () => {
 
   useEffect(() => {
     if (socket) {
-      console.log("[EmergencyAlertModal] Listening for 'emergency_blood_request' on socket:", socket.id);
-      socket.on("emergency_blood_request", (payload: EmergencyPayload) => {
-        console.log("[EmergencyAlertModal] Received alert payload:", payload);
+      console.log("[EmergencyAlertModal] Socket available. ID:", socket.id, "Connected:", socket.connected);
+      
+      const handleAlert = (payload: EmergencyPayload) => {
+        console.log("[EmergencyAlertModal] EVENT RECEIVED:", payload);
         setAlertData(payload);
-        // Maybe play a sound
-      });
-    } else {
-      console.log("[EmergencyAlertModal] Socket is null, waiting for connection...");
-    }
-    return () => {
-      if (socket) {
-        socket.off("emergency_blood_request");
+      };
+
+      socket.on("emergency_blood_request", handleAlert);
+      
+      // Also check if socket is already connected
+      if (socket.connected) {
+        console.log("[EmergencyAlertModal] Socket is already connected and listening.");
       }
-    };
+
+      return () => {
+        console.log("[EmergencyAlertModal] Cleaning up listener...");
+        socket.off("emergency_blood_request", handleAlert);
+      };
+    } else {
+      console.log("[EmergencyAlertModal] Socket is null.");
+    }
   }, [socket]);
 
   const handleReady = async () => {

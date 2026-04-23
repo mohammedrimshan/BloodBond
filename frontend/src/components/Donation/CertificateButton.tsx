@@ -89,6 +89,7 @@ const CertificateButton: React.FC<Props> = ({ donationId }) => {
               bloodGroup={donation.userId.bloodGroup}
               date={donation.donatedAt}
               certificateId={donation._id}
+              isEmergency={donation.isEmergency}
             />
           )}
         </div>

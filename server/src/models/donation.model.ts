@@ -8,6 +8,8 @@ const donationSchema = new Schema<DonationDocument>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     donatedAt: { type: Date, required: true },
     nextEligibleDate: { type: Date, required: true },
+    isEmergency: { type: Boolean, default: false },
+    emergencyId: { type: Schema.Types.ObjectId, ref: "Emergency" },
   },
   { timestamps: true }
 );

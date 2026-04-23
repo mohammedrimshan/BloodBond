@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { X, Droplet, UserCheck } from "lucide-react";
-import { useUpdateEmergency } from "../hooks/useEmergency";
+import { X, Droplet, UserCheck, Check, Ban } from "lucide-react";
+import { useUpdateEmergency, useVerifyEmergency } from "../hooks/useEmergency";
 
 interface EmergencyDrawerProps {
   selectedRequest: any;
@@ -12,6 +12,7 @@ const EmergencyDrawer = ({ selectedRequest, setSelectedRequest }: EmergencyDrawe
   const [drawerStatus, setDrawerStatus] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const updateMutation = useUpdateEmergency();
+  const verifyMutation = useVerifyEmergency();
 
   useEffect(() => {
     if (selectedRequest) {
@@ -128,49 +129,76 @@ const EmergencyDrawer = ({ selectedRequest, setSelectedRequest }: EmergencyDrawe
 
           {/* Status Update Form */}
           <div className="space-y-4 pt-4 border-t border-slate-800/60">
-            <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Update Status</label>
-              <select
-                value={drawerStatus}
-                onChange={(e) => setDrawerStatus(e.target.value)}
-                disabled={selectedRequest.status === "Completed"}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-red-500/50 disabled:opacity-50"
-              >
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
+            {selectedRequest.status === "Pending Verification" ? (
+              <div className="space-y-4">
+                <p className="text-xs font-bold text-amber-500 uppercase tracking-[0.2em] animate-pulse">Needs Verification</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => verifyMutation.mutate({ id: selectedRequest._id, status: "Pending" })}
+                    disabled={verifyMutation.isPending}
+                    className="flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/20"
+                  >
+                    <Check size={16} /> Approve
+                  </button>
+                  <button
+                    onClick={() => verifyMutation.mutate({ id: selectedRequest._id, status: "Rejected" })}
+                    disabled={verifyMutation.isPending}
+                    className="flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all"
+                  >
+                    <Ban size={16} /> Reject
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Update Status</label>
+                  <select
+                    value={drawerStatus}
+                    onChange={(e) => setDrawerStatus(e.target.value)}
+                    disabled={selectedRequest.status === "Completed" || selectedRequest.status === "Rejected"}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-red-500/50 disabled:opacity-50"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
 
-            {drawerStatus === "Completed" && selectedRequest.status !== "Completed" && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Select Donated User</label>
-                <select
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  className="w-full bg-slate-950 border border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500/80"
-                >
-                  <option value="" disabled>-- Choose a User --</option>
-                  {selectedRequest.readyUsers.map((u: any) => (
-                    <option key={u._id} value={u._id}>{u.name} ({u.bloodGroup})</option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-slate-500 mt-2">Selecting a user will mark their donation in the system and reset their eligibility timer.</p>
-              </motion.div>
+                {drawerStatus === "Completed" && selectedRequest.status !== "Completed" && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">Select Donated User</label>
+                    <select
+                      value={selectedUserId}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                      className="w-full bg-slate-950 border border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-bold text-white focus:outline-none focus:border-emerald-500/80"
+                    >
+                      <option value="" disabled>-- Choose a User --</option>
+                      {selectedRequest.readyUsers.map((u: any) => (
+                        <option key={u._id} value={u._id}>{u.name} ({u.bloodGroup})</option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-500 mt-2">Selecting a user will mark their donation in the system and reset their eligibility timer.</p>
+                  </motion.div>
+                )}
+              </>
             )}
           </div>
         </div>
 
         {/* Drawer Footer */}
-        <div className="p-6 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md sticky bottom-0">
-          <button
-            onClick={handleUpdateStatus}
-            disabled={updateMutation.isPending || selectedRequest.status === "Completed" || (drawerStatus === selectedRequest.status && selectedRequest.status !== "Completed")}
-            className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-red-900/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {updateMutation.isPending ? "Saving..." : selectedRequest.status === "Completed" ? "Already Completed" : "Save Changes"}
-          </button>
-        </div>
+        {selectedRequest.status !== "Pending Verification" && (
+          <div className="p-6 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md sticky bottom-0">
+            <button
+              onClick={handleUpdateStatus}
+              disabled={updateMutation.isPending || selectedRequest.status === "Completed" || selectedRequest.status === "Rejected" || (drawerStatus === selectedRequest.status && selectedRequest.status !== "Completed")}
+              className="w-full py-3.5 bg-red-600 hover:bg-red-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-red-900/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updateMutation.isPending ? "Saving..." : selectedRequest.status === "Completed" ? "Already Completed" : selectedRequest.status === "Rejected" ? "Rejected" : "Save Changes"}
+            </button>
+          </div>
+        )}
 
       </motion.div>
     </div>

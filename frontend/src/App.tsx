@@ -18,6 +18,8 @@ import EditProfilePage from "@/components/Profile/EditProfilePage";
 import Navbar from "@/components/Navbar/Navbar";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { EmergencyAlertModal } from "@/components/EmergencyAlertModal";
+import NotificationPage from "@/pages/NotificationPage";
+import SuccessStoriesPage from "@/pages/SuccessStoriesPage";
 
 import ProtectedRoute from "@/Protect/ProtectedRoute";
 import AuthProtectedRoute from "@/Protect/AuthProtectedRoute";
@@ -79,11 +81,13 @@ const AppContent = () => {
             {/* Public pages */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/donors" element={<DonorsPage />} />
+            <Route path="/stories" element={<SuccessStoriesPage />} />
 
             {/* Auth-only pages */}
             <Route element={<AuthProtectedRoute />}>
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/notifications" element={<NotificationPage />} />
             </Route>
           </Route>
 

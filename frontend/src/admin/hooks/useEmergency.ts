@@ -68,3 +68,20 @@ export const useUpdateEmergency = () => {
     },
   });
 };
+
+export const useVerifyEmergency = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "Pending" | "Rejected" }) => {
+      const response = await adminAxios.patch(`/emergency/${id}/verify`, { status });
+      return response.data;
+    },
+    onSuccess: (data: any, variables: any) => {
+      toast.success(`Request ${variables.status === "Pending" ? "Approved" : "Rejected"} successfully.`);
+      queryClient.invalidateQueries({ queryKey: ["admin", "emergencies"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to process verification.");
+    },
+  });
+};

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useGetEmergencies } from "../hooks/useEmergency";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, CheckCircle, Activity, Plus, Search, Filter, Droplet } from "lucide-react";
+import { Clock, CheckCircle, Activity, Plus, Search, Filter, Droplet, Ban } from "lucide-react";
 import EmergencyDrawer from "../components/EmergencyDrawer";
 import EmergencyModal from "../components/EmergencyModal";
 
@@ -73,9 +73,11 @@ const Emergency = () => {
               className="appearance-none bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-2xl pl-11 pr-10 py-3.5 text-sm font-bold text-slate-300 focus:outline-none focus:border-red-500/50 shadow-lg shadow-black/10 transition-all cursor-pointer min-w-[160px]"
             >
               <option className="bg-slate-900 text-white" value="All">All Statuses</option>
-              <option className="bg-slate-900 text-white" value="Pending">Pending</option>
+              <option className="bg-slate-900 text-white" value="Pending Verification">Pending Verification</option>
+              <option className="bg-slate-900 text-white" value="Pending">Approved (Pending)</option>
               <option className="bg-slate-900 text-white" value="In Progress">In Progress</option>
               <option className="bg-slate-900 text-white" value="Completed">Completed</option>
+              <option className="bg-slate-900 text-white" value="Rejected">Rejected</option>
             </select>
           </div>
 
@@ -163,13 +165,17 @@ const Emergency = () => {
                       <td className="px-6 py-4 md:py-6 flex md:table-cell items-center justify-between border-b border-white/[0.03] md:border-none">
                         <span className="md:hidden text-[10px] font-black uppercase tracking-widest text-slate-600">Status</span>
                         <div className="flex items-center gap-2">
-                          {req.status === "Pending" && <Clock size={14} className="text-amber-500" />}
+                          {req.status === "Pending Verification" && <Clock size={14} className="text-amber-400" />}
+                          {req.status === "Pending" && <CheckCircle size={14} className="text-emerald-500" />}
                           {req.status === "In Progress" && <Activity size={14} className="text-sky-500" />}
-                          {req.status === "Completed" && <CheckCircle size={14} className="text-emerald-500" />}
+                          {req.status === "Completed" && <CheckCircle size={14} className="text-emerald-600" />}
+                          {req.status === "Rejected" && <Ban size={14} className="text-slate-500" />}
                           <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                            req.status === "Pending" ? "bg-amber-500/10 text-amber-500" :
+                            req.status === "Pending Verification" ? "bg-amber-400/10 text-amber-400" :
+                            req.status === "Pending" ? "bg-emerald-500/10 text-emerald-500" :
                             req.status === "In Progress" ? "bg-sky-500/10 text-sky-500" :
-                            "bg-emerald-500/10 text-emerald-500"
+                            req.status === "Completed" ? "bg-emerald-600/10 text-emerald-600" :
+                            "bg-slate-500/10 text-slate-500"
                           }`}>{req.status}</span>
                         </div>
                       </td>

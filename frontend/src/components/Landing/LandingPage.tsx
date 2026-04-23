@@ -2,17 +2,19 @@ import HeroCarousel from "./HeroCarousel";
 import DonorSection from "./DonorSection";
 import RecentDonorsCarousel from "./RecentDonorsCarousel";
 import { useGetDonors } from "@/hooks/users/useUsers";
-import { Droplets, Heart, Users } from "lucide-react";
+import { Droplets, Heart, Users, PlusCircle } from "lucide-react";
 import InteractiveDroplet from "./InteractiveDroplet";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import BloodRequestForm from "./BloodRequestForm";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const LandingPage = () => {
   const { hash } = useLocation();
   const { data: donorsResponse, isLoading } = useGetDonors();
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false);
   const donors = donorsResponse?.data || [];
 
   useEffect(() => {
@@ -59,11 +61,15 @@ const LandingPage = () => {
                     Become a Donor
                   </Button>
                 </Link>
-                <Link to="/donors" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 transition-all">
-                    View Donors
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => setIsRequestFormOpen(true)}
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full sm:w-auto h-14 px-8 text-lg rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 transition-all gap-2"
+                >
+                  <PlusCircle size={20} className="text-red-600" />
+                  Request Blood
+                </Button>
               </div>
             </div>
 
@@ -126,6 +132,7 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+      <BloodRequestForm isOpen={isRequestFormOpen} onClose={() => setIsRequestFormOpen(false)} />
     </div>
   );
 };

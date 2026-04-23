@@ -24,6 +24,7 @@ export default function adminRoutes(adminController: any, donationController: Do
   router.post("/emergency", verifyAdmin, emergencyController.createEmergency.bind(emergencyController));
   router.get("/emergency", verifyAdmin, emergencyController.getAllEmergencies.bind(emergencyController));
   router.put("/emergency/:id/status", verifyAdmin, emergencyController.updateEmergencyStatus.bind(emergencyController));
+  router.patch("/emergency/:id/verify", verifyAdmin, emergencyController.verifyEmergency.bind(emergencyController));
 
   return router;
 }

@@ -5,13 +5,16 @@ import { AppError } from "../utils/appError";
 import { ERROR_MESSAGES } from "../constants/messages";
 import { StatusCode } from "../constants/statusCode";
 
+import { NotificationService } from "./notification.service";
+
 export class DonationService {
   constructor(
     private donationRepository: DonationRepository,
-    private adminRepository: AdminRepository
+    private adminRepository: AdminRepository,
+    private notificationService: NotificationService
   ) {}
 
-  async markAsDonated(userId: string): Promise<any> {
+  async markAsDonated(userId: string, customTitle?: string, customMessage?: string, emergencyId?: string): Promise<any> {
     const user = await this.adminRepository.getUserById(userId);
     if (!user) {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, StatusCode.NOT_FOUND);
@@ -29,9 +32,28 @@ export class DonationService {
       userId: user._id as Types.ObjectId,
       donatedAt,
       nextEligibleDate,
+      isEmergency: !!emergencyId,
+      emergencyId: emergencyId ? new Types.ObjectId(emergencyId) : undefined,
     });
 
     await this.donationRepository.updateUserInfoAfterDonation(userId, donatedAt, nextEligibleDate);
+
+    // Send Notification
+    const formattedDate = nextEligibleDate.toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const title = customTitle || "Donation Successful! ❤️";
+    const message = customMessage || `Thank you for your life-saving contribution. You will be eligible to donate again after ${formattedDate}.`;
+
+    await this.notificationService.sendNotification(
+      userId,
+      title,
+      message,
+      "donation_completed"
+    );
 
     return donation;
   }
